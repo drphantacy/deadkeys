@@ -131,7 +131,7 @@ const GameCanvas = ({ onGameOver, onScoreUpdate }) => {
                             left: `${zombie.left}%`,
                             width: '30px',
                             height: '30px',
-                            backgroundColor: 'red',
+                            backgroundColor: 'purple', // Changed from red to purple
                             borderRadius: '50%',
                             textAlign: 'center',
                             color: 'white',
