@@ -5,6 +5,7 @@ const GameCanvas = ({ onGameOver, onScoreUpdate }) => {
     const [playerInput, setPlayerInput] = useState('');
     const [timeLeft, setTimeLeft] = useState(60);
     const [usedWords, setUsedWords] = useState([]); // Track used words
+    const [health, setHealth] = useState(3); // Track player's health
 
     useEffect(() => {
         // Timer countdown
@@ -74,12 +75,24 @@ const GameCanvas = ({ onGameOver, onScoreUpdate }) => {
             setZombies((prev) =>
                 prev
                     .map((z) => ({ ...z, position: z.position + 1 })) // Increment position slowly
-                    .filter((z) => z.position < 400) // Remove zombies that reach the bottom
+                    .filter((z) => {
+                        if (z.position >= 400) {
+                            setHealth((prevHealth) => {
+                                const newHealth = prevHealth - 1;
+                                if (newHealth <= 0) {
+                                    onGameOver(); // Trigger game over when health reaches 0
+                                }
+                                return newHealth;
+                            });
+                            return false; // Remove zombie that reaches the bottom
+                        }
+                        return true;
+                    })
             );
         }, 50);
 
         return () => clearInterval(interval);
-    }, []);
+    }, [onGameOver]);
 
     const generateUniqueWord = () => {
         const words = ['apple', 'banana', 'cherry', 'date', 'elderberry'];
@@ -92,7 +105,22 @@ const GameCanvas = ({ onGameOver, onScoreUpdate }) => {
 
     return (
         <div>
-            <div>Time Left: {timeLeft}s</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>Time Left: {timeLeft}s</div>
+                <div style={{ display: 'flex', gap: '5px' }}>
+                    {Array.from({ length: health }).map((_, index) => (
+                        <div
+                            key={index}
+                            style={{
+                                width: '20px',
+                                height: '20px',
+                                backgroundColor: 'red',
+                                clipPath: 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)',
+                            }}
+                        ></div>
+                    ))}
+                </div>
+            </div>
             <div style={{ position: 'relative', height: '400px', border: '1px solid black', overflow: 'hidden' }}>
                 {zombies.map((zombie) => (
                     <div
