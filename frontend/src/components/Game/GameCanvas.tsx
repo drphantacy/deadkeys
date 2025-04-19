@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface GameCanvasProps {
     onGameOver: () => void;
@@ -19,6 +19,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate }) =>
     const [timeLeft, setTimeLeft] = useState(60);
     const [health, setHealth] = useState(3); // Track player's health
     const [usedWords, setUsedWords] = useState<string[]>([]); // Track used words
+    const gunSoundRef = useRef<HTMLAudioElement | null>(null); // Reference to the gun sound
 
     useEffect(() => {
         // Timer countdown
@@ -115,8 +116,19 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate }) =>
         return newWord;
     };
 
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setPlayerInput(e.target.value);
+
+        // Play gun sound
+        if (gunSoundRef.current) {
+            gunSoundRef.current.currentTime = 0; // Reset sound to the beginning
+            gunSoundRef.current.play();
+        }
+    };
+
     return (
         <div>
+            <audio ref={gunSoundRef} src="/sounds/gunshot.mp3" preload="auto"></audio> {/* Gun sound */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>Time Left: {timeLeft}s</div>
                 <div style={{ display: 'flex', gap: '5px' }}>
@@ -175,7 +187,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate }) =>
             <input
                 type="text"
                 value={playerInput}
-                onChange={(e) => setPlayerInput(e.target.value)}
+                onChange={handleInputChange}
                 placeholder="Type here..."
             />
         </div>
