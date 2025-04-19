@@ -17,6 +17,7 @@ const GameStateManager: React.FC = () => {
         { name: 'Bob', points: 80 },
     ]);
     const [screenEffect, setScreenEffect] = useState(false); // Track screen flash and shake effect
+    const [lastPage, setLastPage] = useState<'start' | 'playing' | 'gameOver'>('start'); // Track the last page
 
     const handleStart = () => {
         setScore(0); // Reset the score
@@ -35,6 +36,13 @@ const GameStateManager: React.FC = () => {
     const triggerScreenEffect = () => {
         setScreenEffect(true);
         setTimeout(() => setScreenEffect(false), 200); // Reset effect after 0.2 seconds
+    };
+
+    const handleViewLeaderboard = () => {
+        if (gameState !== 'leaderboard') {
+            setLastPage(gameState as 'start' | 'playing' | 'gameOver'); // Save the current page as the last page
+        }
+        setGameState('leaderboard');
     };
 
     return (
@@ -59,31 +67,36 @@ const GameStateManager: React.FC = () => {
             </style>
             {gameState === 'start' && (
                 <StartScreen
-                    onStart={handleStart} // Pass handleStart to StartScreen
-                    onViewLeaderboard={() => setGameState('leaderboard')}
+                    onStart={handleStart}
+                    onViewLeaderboard={handleViewLeaderboard}
                 />
             )}
             {gameState === 'playing' && (
                 <GameCanvas
                     onGameOver={handleGameOver}
                     onScoreUpdate={(points: number) => setScore((prev) => prev + points)}
-                    onZombieReachBottom={triggerScreenEffect} // Trigger screen effect when zombie reaches bottom
+                    onZombieReachBottom={triggerScreenEffect}
                 />
             )}
             {gameState === 'gameOver' && (
                 <div>
                     <GameOver score={score} onRestart={handleRestart} />
-                    <Leaderboard scores={leaderboard} /> {/* Show leaderboard */}
+                    <button
+                        onClick={handleViewLeaderboard}
+                        style={{ marginTop: '10px' }}
+                    >
+                        View Leaderboard
+                    </button>
                 </div>
             )}
             {gameState === 'leaderboard' && (
                 <div className="leaderboard-screen">
                     <Leaderboard scores={leaderboard} />
                     <button
-                        onClick={() => setGameState('start')}
+                        onClick={() => setGameState(lastPage)} // Return to the last page
                         style={{ marginTop: '10px' }}
                     >
-                        Back to Start
+                        Close
                     </button>
                 </div>
             )}
