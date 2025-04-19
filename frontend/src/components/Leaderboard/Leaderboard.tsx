@@ -1,15 +1,6 @@
-import React from 'react';
-
-interface LeaderboardEntry {
-    name: string;
-    points: number;
-}
-
-interface LeaderboardProps {
-    scores: LeaderboardEntry[];
-}
-
-const Leaderboard: React.FC<LeaderboardProps> = ({ scores }) => {
+// ...existing code for Leaderboard...
+const Leaderboard: React.FC<{ scores: { name: string; points: number }[] }> = ({ scores }) => {
+    // ...existing code...
     return (
         <div>
             <h1>Leaderboard</h1>
@@ -24,4 +15,6 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ scores }) => {
     );
 };
 
-export default Leaderboard;
+export default Leaderboard; // Add default export
+
+export {}; // Ensure this file is treated as a module

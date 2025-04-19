@@ -1,11 +1,24 @@
 import React, { useState, useEffect } from 'react';
 
-const GameCanvas = ({ onGameOver, onScoreUpdate }) => {
-    const [zombies, setZombies] = useState([]);
+interface GameCanvasProps {
+    onGameOver: () => void;
+    onScoreUpdate: (points: number) => void;
+}
+
+interface Zombie {
+    id: number;
+    word: string;
+    position: number;
+    left: number;
+    health: number; // Add health property
+}
+
+const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate }) => {
+    const [zombies, setZombies] = useState<Zombie[]>([]);
     const [playerInput, setPlayerInput] = useState('');
     const [timeLeft, setTimeLeft] = useState(60);
-    const [usedWords, setUsedWords] = useState([]); // Track used words
     const [health, setHealth] = useState(3); // Track player's health
+    const [usedWords, setUsedWords] = useState<string[]>([]); // Track used words
 
     useEffect(() => {
         // Timer countdown
@@ -35,7 +48,7 @@ const GameCanvas = ({ onGameOver, onScoreUpdate }) => {
                         word: newWord,
                         position: 0,
                         left: Math.random() * 90,
-                        health: 100, // Start with full health
+                        health: 100, // Initialize health to 100
                     },
                 ]);
             }
@@ -61,11 +74,10 @@ const GameCanvas = ({ onGameOver, onScoreUpdate }) => {
             if (playerInput === matchingZombie.word) {
                 // Zombie is killed
                 setZombies((prev) => prev.filter((z) => z.id !== matchingZombie.id));
+                setUsedWords((prev) => prev.filter((word) => word !== matchingZombie.word)); // Remove word from used list
                 onScoreUpdate(10); // Award 10 points for each zombie killed
                 setPlayerInput('');
             }
-        } else {
-            setPlayerInput(''); // Reset input if no match
         }
     }, [playerInput, zombies, onScoreUpdate]);
 
@@ -131,7 +143,7 @@ const GameCanvas = ({ onGameOver, onScoreUpdate }) => {
                             left: `${zombie.left}%`,
                             width: '30px',
                             height: '30px',
-                            backgroundColor: 'purple', // Reverted to purple
+                            backgroundColor: 'purple',
                             borderRadius: '50%',
                             textAlign: 'center',
                             color: 'white',

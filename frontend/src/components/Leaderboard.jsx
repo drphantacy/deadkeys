@@ -1,13 +1,19 @@
 import React from 'react';
 
-const Leaderboard = ({ scores }) => {
+const Leaderboard = () => {
+    const mockScores = [
+        { name: 'Player1', score: 100 },
+        { name: 'Player2', score: 80 },
+        { name: 'Player3', score: 60 },
+    ];
+
     return (
         <div>
-            <h2>Leaderboard</h2>
+            <h1>Leaderboard</h1>
             <ul>
-                {scores.map((score, index) => (
+                {mockScores.map((entry, index) => (
                     <li key={index}>
-                        {index + 1}. {score.name}: {score.points}
+                        {entry.name}: {entry.score} points
                     </li>
                 ))}
             </ul>

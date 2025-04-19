@@ -1,15 +1,12 @@
 import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import StartScreen from './components/StartScreen';
 import GameCanvas from './components/GameCanvas';
 import Leaderboard from './components/Leaderboard';
-import GameOver from './components/GameOver';
 
 const App = () => {
     const [gameState, setGameState] = useState('playing'); // 'playing', 'gameOver'
     const [score, setScore] = useState(0);
-    const [leaderboard, setLeaderboard] = useState([
-        { name: 'Alice', points: 100 },
-        { name: 'Bob', points: 80 },
-    ]);
 
     const handleGameOver = () => {
         setGameState('gameOver');
@@ -25,18 +22,13 @@ const App = () => {
     };
 
     return (
-        <div>
-            {gameState === 'playing' && (
-                <GameCanvas
-                    onGameOver={handleGameOver}
-                    onScoreUpdate={handleScoreUpdate}
-                />
-            )}
-            {gameState === 'gameOver' && (
-                <GameOver score={score} onRestart={handleRestart} />
-            )}
-            <Leaderboard scores={leaderboard} />
-        </div>
+        <Router>
+            <Routes>
+                <Route path="/" element={<StartScreen />} />
+                <Route path="/game" element={<GameCanvas onGameOver={handleGameOver} onScoreUpdate={handleScoreUpdate} />} />
+                <Route path="/leaderboard" element={<Leaderboard />} />
+            </Routes>
+        </Router>
     );
 };
 
