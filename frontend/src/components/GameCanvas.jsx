@@ -5,7 +5,7 @@ const GameCanvas = ({ onGameOver, onScoreUpdate }) => {
     const [playerInput, setPlayerInput] = useState('');
     const [timeLeft, setTimeLeft] = useState(60);
     const [usedWords, setUsedWords] = useState([]); // Track used words
-    const [health, setHealth] = useState(3); // Track player's health
+    const [lives, setLives] = useState(5); // Match initial lives with Game.tsx
 
     useEffect(() => {
         // Timer countdown
@@ -42,7 +42,7 @@ const GameCanvas = ({ onGameOver, onScoreUpdate }) => {
         }, 2000);
 
         return () => clearInterval(interval);
-    }, [usedWords]);
+    }, [usedWords]); // Ensure this only runs when `usedWords` changes
 
     useEffect(() => {
         // Check if player input matches any zombie word
@@ -64,10 +64,8 @@ const GameCanvas = ({ onGameOver, onScoreUpdate }) => {
                 onScoreUpdate(10); // Award 10 points for each zombie killed
                 setPlayerInput('');
             }
-        } else {
-            setPlayerInput(''); // Reset input if no match
         }
-    }, [playerInput, zombies, onScoreUpdate]);
+    }, [playerInput, zombies, onScoreUpdate]); // Ensure this only runs when `playerInput` or `zombies` changes
 
     useEffect(() => {
         // Move zombies down slowly
@@ -77,12 +75,12 @@ const GameCanvas = ({ onGameOver, onScoreUpdate }) => {
                     .map((z) => ({ ...z, position: z.position + 1 })) // Increment position slowly
                     .filter((z) => {
                         if (z.position >= 400) {
-                            setHealth((prevHealth) => {
-                                const newHealth = prevHealth - 1;
-                                if (newHealth <= 0) {
-                                    onGameOver(); // Trigger game over when health reaches 0
+                            setLives((prevLives) => {
+                                const newLives = prevLives - 1;
+                                if (newLives <= 0) {
+                                    onGameOver(); // Trigger game over when lives reach 0
                                 }
-                                return newHealth;
+                                return newLives;
                             });
                             return false; // Remove zombie that reaches the bottom
                         }
@@ -92,7 +90,7 @@ const GameCanvas = ({ onGameOver, onScoreUpdate }) => {
         }, 50);
 
         return () => clearInterval(interval);
-    }, [onGameOver]);
+    }, [onGameOver]); // Ensure this only runs when `onGameOver` changes
 
     const generateUniqueWord = () => {
         const words = ['apple', 'banana', 'cherry', 'date', 'elderberry'];
@@ -107,8 +105,9 @@ const GameCanvas = ({ onGameOver, onScoreUpdate }) => {
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>Time Left: {timeLeft}s</div>
+                {/* Dynamically render lives as stars */}
                 <div style={{ display: 'flex', gap: '5px' }}>
-                    {Array.from({ length: health }).map((_, index) => (
+                    {Array.from({ length: lives }).map((_, index) => (
                         <div
                             key={index}
                             style={{
@@ -131,7 +130,7 @@ const GameCanvas = ({ onGameOver, onScoreUpdate }) => {
                             left: `${zombie.left}%`,
                             width: '30px',
                             height: '30px',
-                            backgroundColor: 'purple', // Reverted to purple
+                            backgroundColor: 'purple',
                             borderRadius: '50%',
                             textAlign: 'center',
                             color: 'white',

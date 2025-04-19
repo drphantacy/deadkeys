@@ -5,7 +5,7 @@ const Game: React.FC = () => {
     const { playerState, savePlayerState } = usePlayerState('playerId');
     const [zombies, setZombies] = useState<string[]>([]);
     const [score, setScore] = useState<number>(0);
-    const [lives, setLives] = useState<number>(3);
+    const [lives, setLives] = useState<number>(1); // Initial lives set to 5
     const [gameOver, setGameOver] = useState<boolean>(false);
 
     useEffect(() => {
@@ -17,38 +17,52 @@ const Game: React.FC = () => {
         spawnZombies();
     }, []);
 
+    const handleZombieCrossBase = (zombie: string) => {
+        setLives((prevLives) => {
+            const newLives = prevLives - 1; // Deduct 1 life
+            console.log(`Lives updated: ${newLives}`); // Debugging log
+            if (newLives <= 0) {
+                setGameOver(true); // Trigger game over if lives reach 0
+                savePlayerState({ highScore: score, totalGames: 1 }); // Save player state
+            }
+            return newLives; // Update lives
+        });
+        setZombies((prevZombies) => prevZombies.filter((z) => z !== zombie)); // Remove zombie
+    };
+
     const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (gameOver) return;
 
         const key = event.key.toLowerCase();
         if (zombies.includes(key)) {
-            setScore(score + 1);
-            setZombies(zombies.filter(z => z !== key));
-        } else {
-            setLives(lives - 1);
-            if (lives <= 1) {
-                setGameOver(true);
-                savePlayerState({ highScore: score, totalGames: 1 });
-            }
+            setScore((prevScore) => prevScore + 1); // Increment score
+            setZombies((prevZombies) => prevZombies.filter((z) => z !== key)); // Remove zombie
         }
     };
 
     useEffect(() => {
-        window.addEventListener('keypress', handleKeyPress as any);
-        return () => {
-            window.removeEventListener('keypress', handleKeyPress as any);
-        };
-    }, [zombies, score, lives, gameOver]);
+        const interval = setInterval(() => {
+            if (zombies.length > 0) {
+                const zombieToCross = zombies[0]; // Simulate the first zombie crossing the base
+                handleZombieCrossBase(zombieToCross); // Call the function for the first zombie
+            }
+        }, 2000); // Simulate zombies crossing every 2 seconds
+
+        return () => clearInterval(interval);
+    }, [zombies]);
 
     return (
         <div className="game-container">
             <h1>DeadKeys</h1>
             <div className="game-info">
                 <p>Score: {score}</p>
-                <p>Lives: {lives}</p>
+                {/* Display lives as a number */}
+                <p style={{ textAlign: 'right', fontSize: '18px', fontWeight: 'bold' }}>
+                    Lives: {lives} 
+                </p>
             </div>
             <div className="zombie-container">
-                {zombies.map(zombie => (
+                {zombies.map((zombie) => (
                     <div key={zombie} className="zombie">
                         Zombie {zombie}
                     </div>
