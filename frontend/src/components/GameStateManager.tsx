@@ -16,6 +16,7 @@ const GameStateManager: React.FC = () => {
         { name: 'Alice', points: 100 },
         { name: 'Bob', points: 80 },
     ]);
+    const [screenEffect, setScreenEffect] = useState(false); // Track screen flash and shake effect
 
     const handleStart = () => {
         setScore(0); // Reset the score
@@ -31,8 +32,31 @@ const GameStateManager: React.FC = () => {
         setGameState('start');
     };
 
+    const triggerScreenEffect = () => {
+        setScreenEffect(true);
+        setTimeout(() => setScreenEffect(false), 200); // Reset effect after 0.2 seconds
+    };
+
     return (
-        <div>
+        <div
+            style={{
+                position: 'relative',
+                overflow: 'hidden',
+                animation: screenEffect ? 'shake 0.2s' : 'none',
+                backgroundColor: screenEffect ? 'rgba(255, 0, 0, 0.5)' : 'transparent',
+            }}
+        >
+            <style>
+                {`
+                @keyframes shake {
+                    0% { transform: translate(0, 0); }
+                    25% { transform: translate(-5px, 5px); }
+                    50% { transform: translate(5px, -5px); }
+                    75% { transform: translate(-5px, -5px); }
+                    100% { transform: translate(0, 0); }
+                }
+                `}
+            </style>
             {gameState === 'start' && (
                 <StartScreen
                     onStart={handleStart} // Pass handleStart to StartScreen
@@ -43,6 +67,7 @@ const GameStateManager: React.FC = () => {
                 <GameCanvas
                     onGameOver={handleGameOver}
                     onScoreUpdate={(points: number) => setScore((prev) => prev + points)}
+                    onZombieReachBottom={triggerScreenEffect} // Trigger screen effect when zombie reaches bottom
                 />
             )}
             {gameState === 'gameOver' && (

@@ -3,23 +3,24 @@ import React, { useState, useEffect, useRef } from 'react';
 interface GameCanvasProps {
     onGameOver: () => void;
     onScoreUpdate: (points: number) => void;
+    onZombieReachBottom: () => void; // Callback to trigger screen effect
 }
 
 interface Zombie {
     id: number;
     word: string;
-    position: number;
-    left: number;
-    health: number; // Add health property
+    position: number; // Vertical position of the zombie
+    left: number; // Horizontal position of the zombie
+    health: number; 
 }
 
-const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate }) => {
+const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZombieReachBottom }) => {
     const [zombies, setZombies] = useState<Zombie[]>([]);
     const [playerInput, setPlayerInput] = useState('');
     const [timeLeft, setTimeLeft] = useState(60);
-    const [health, setHealth] = useState(3); // Track player's health
-    const [usedWords, setUsedWords] = useState<string[]>([]); // Track used words
-    const gunSoundRef = useRef<HTMLAudioElement | null>(null); // Reference to the gun sound
+    const [health, setHealth] = useState(3); 
+    const [usedWords, setUsedWords] = useState<string[]>([]); 
+    const gunSoundRef = useRef<HTMLAudioElement | null>(null); 
 
     useEffect(() => {
         // Timer countdown
@@ -47,9 +48,9 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate }) =>
                     {
                         id: Date.now(),
                         word: newWord,
-                        position: 0,
-                        left: Math.random() * 90,
-                        health: 100, // Initialize health to 100
+                        position: 0, // Start at the top
+                        left: Math.random() * 90, // Random horizontal position
+                        health: 100, 
                     },
                 ]);
             }
@@ -57,6 +58,32 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate }) =>
 
         return () => clearInterval(interval);
     }, [usedWords]);
+
+    useEffect(() => {
+        // Move zombies down slowly
+        const interval = setInterval(() => {
+            setZombies((prev) =>
+                prev
+                    .map((z) => ({ ...z, position: z.position + 2 })) // Increment position by 2 pixels
+                    .filter((z) => {
+                        if (z.position >= 400) {
+                            setHealth((prevHealth) => {
+                                const newHealth = prevHealth - 1;
+                                if (newHealth <= 0) {
+                                    onGameOver(); // Trigger game over when health reaches 0
+                                }
+                                return newHealth;
+                            });
+                            onZombieReachBottom(); // Trigger screen effect
+                            return false; // Remove zombie that reaches the bottom
+                        }
+                        return true;
+                    })
+            );
+        }, 50); // Update every 50ms
+
+        return () => clearInterval(interval);
+    }, [onGameOver, onZombieReachBottom]);
 
     useEffect(() => {
         // Check if player input matches any zombie word
@@ -67,7 +94,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate }) =>
             setZombies((prev) =>
                 prev.map((z) =>
                     z.id === matchingZombie.id
-                        ? { ...z, health: 100 - progress } // Update health
+                        ? { ...z, health: 100 - progress } // Update health only
                         : z
                 )
             );
@@ -81,31 +108,6 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate }) =>
             }
         }
     }, [playerInput, zombies, onScoreUpdate]);
-
-    useEffect(() => {
-        // Move zombies down slowly
-        const interval = setInterval(() => {
-            setZombies((prev) =>
-                prev
-                    .map((z) => ({ ...z, position: z.position + 1 })) // Increment position slowly
-                    .filter((z) => {
-                        if (z.position >= 400) {
-                            setHealth((prevHealth) => {
-                                const newHealth = prevHealth - 1;
-                                if (newHealth <= 0) {
-                                    onGameOver(); // Trigger game over when health reaches 0
-                                }
-                                return newHealth;
-                            });
-                            return false; // Remove zombie that reaches the bottom
-                        }
-                        return true;
-                    })
-            );
-        }, 50);
-
-        return () => clearInterval(interval);
-    }, [onGameOver]);
 
     const generateUniqueWord = () => {
         const words = ['apple', 'banana', 'cherry', 'date', 'elderberry'];
@@ -151,8 +153,8 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate }) =>
                         key={zombie.id}
                         style={{
                             position: 'absolute',
-                            top: `${zombie.position}px`,
-                            left: `${zombie.left}%`,
+                            top: `${zombie.position}px`, // Use position for vertical movement
+                            left: `${zombie.left}%`, // Use left for horizontal position
                             width: '30px',
                             height: '30px',
                             backgroundColor: 'purple',
