@@ -46,7 +46,10 @@ const GameStateManager: React.FC = () => {
                 />
             )}
             {gameState === 'gameOver' && (
-                <GameOver score={score} onRestart={handleRestart} />
+                <div>
+                    <GameOver score={score} onRestart={handleRestart} />
+                    <Leaderboard scores={leaderboard} /> {/* Show leaderboard */}
+                </div>
             )}
             {gameState === 'leaderboard' && (
                 <div className="leaderboard-screen">
