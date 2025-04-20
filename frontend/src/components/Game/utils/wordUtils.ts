@@ -15,20 +15,23 @@ export const initializeWordLibrary = () => {
         'anonymity', 'fungible', 'non-fungible', 'tokenomics', 'ico', 'ieo', 'ido', 'staking pool', 'liquidity pool', 'swap',
         'bridge', 'oracle', 'synthetics', 'derivatives', 'margin', 'leverage', 'short', 'long', 'position', 'volatility',
         'cryptography', 'decryption', 'encryption', 'block height', 'genesis block', 'hash function', 'merkle', 'timestamp',
-        'utxo', 'segwit', 'light client', 'full node', 'peer', 'p2p', 'double-spend', 'immutability', 'trustless', 'permissionless',
-        'hyperledger', 'crypto jacking', 'hash power', 'difficulty adjustment', 'block reward', 'halving event', 'dust', 'gas limit',
+        'utxo', 'segwit', 'light client', 'full node', 'peer', 'p2p', 'immutability', 'trustless', 'permissionless',
+        'hyperledger', 'hash power', 'difficulty adjustment', 'block reward', 'halving event', 'dust', 'gas limit',
         'gas price', 'consensus mechanism', 'proof-of-work', 'proof-of-stake', 'delegated', 'byzantine', 'fault tolerance', 'shard',
-        'rollup', 'zk-snark', 'zk-rollup', 'optimistic rollup', 'layer 2', 'sidechain', 'mainnet', 'testnet', 'airdrop campaign',
-        'token burn', 'token minting', 'whitelist', 'pre-sale', 'crowdsale', 'vesting', 'lockup', 'airdrop snapshot', 'governance token',
-        'utility token', 'security token', 'stable token', 'synthetic token', 'wrapped token', 'cross-chain', 'interoperability',
-        'atomic', 'swap protocol', 'liquidity mining', 'impermanent loss', 'yield farming', 'flash loan', 'flash swap', 'collateral',
+        'rollup', 'zk-snark', 'zk-rollup', 'optimistic rollup', 'layer 2', 'sidechain', 'mainnet', 'testnet', 'token burn',
+        'token minting', 'whitelist', 'pre-sale', 'crowdsale', 'vesting', 'lockup', 'governance token', 'utility token',
+        'security token', 'stable token', 'synthetic token', 'wrapped token', 'cross-chain', 'interoperability',
+        'atomic', 'swap protocol', 'liquidity mining', 'yield farming', 'flash loan', 'flash swap', 'collateral',
         'margin trading', 'leveraged trading', 'short selling', 'long position', 'stop loss', 'take profit', 'order book', 'market order',
-        'limit order', 'slippage', 'spread', 'arbitrage opportunity', 'volatility index', 'fear and greed index', 'market cap', 'circulating supply',
+        'limit order', 'slippage', 'spread', 'arbitrage opportunity', 'volatility index', 'market cap', 'circulating supply',
         'total supply', 'max supply', 'inflation rate', 'deflationary', 'burn mechanism', 'minting mechanism', 'staking rewards', 'validator rewards'
     ];
 
+    // Filter out phrases with more than two words
+    const filteredCryptoWords = cryptoWords.filter((word) => word.split(' ').length <= 2);
+
     // Shuffle and pick 80 random words
-    wordLibrary = cryptoWords.sort(() => Math.random() - 0.5).slice(0, 80);
+    wordLibrary = filteredCryptoWords.sort(() => Math.random() - 0.5).slice(0, 80);
 };
 
 export const generateUniqueWord = () => {
