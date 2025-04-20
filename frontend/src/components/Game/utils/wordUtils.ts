@@ -8,3 +8,7 @@ export const generateUniqueWord = () => {
     usedWords.push(newWord);
     return newWord;
 };
+
+export const resetUsedWords = () => {
+    usedWords.length = 0; // Clear the array
+};

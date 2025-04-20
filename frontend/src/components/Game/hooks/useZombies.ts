@@ -1,11 +1,21 @@
 import { useState, useEffect } from 'react';
-import { generateUniqueWord } from '../utils/wordUtils';
+import { generateUniqueWord, resetUsedWords } from '../utils/wordUtils';
 import { Zombie } from '../types'; // Import Zombie type
 
-const useZombies = (onGameOver: () => void, onZombieReachBottom: () => void, setHealth: React.Dispatch<React.SetStateAction<number>>) => {
+const useZombies = (
+    onGameOver: () => void,
+    onZombieReachBottom: () => void,
+    setHealth: React.Dispatch<React.SetStateAction<number>>,
+    restartSignal: boolean // Add restartSignal as a dependency
+) => {
     const [zombies, setZombies] = useState<Zombie[]>([]);
 
     useEffect(() => {
+        // Reset zombies and used words on restart
+        setZombies([]); // Clear zombies
+        resetUsedWords(); // Reset used words
+
+        // Reinitialize spawning logic
         const spawnInterval = setInterval(() => {
             const newWord = generateUniqueWord();
             if (newWord) {
@@ -22,8 +32,8 @@ const useZombies = (onGameOver: () => void, onZombieReachBottom: () => void, set
             }
         }, 2000);
 
-        return () => clearInterval(spawnInterval);
-    }, []);
+        return () => clearInterval(spawnInterval); // Cleanup interval on unmount or restart
+    }, [restartSignal]); // Restart logic when restartSignal changes
 
     useEffect(() => {
         const moveInterval = setInterval(() => {
@@ -36,6 +46,8 @@ const useZombies = (onGameOver: () => void, onZombieReachBottom: () => void, set
                                 const newHealth = prevHealth - 1;
                                 if (newHealth <= 0) {
                                     onGameOver();
+                                    setZombies([]); // Clear zombies on game over
+                                    resetUsedWords(); // Reset used words on game over
                                 }
                                 return newHealth;
                             });
@@ -47,7 +59,7 @@ const useZombies = (onGameOver: () => void, onZombieReachBottom: () => void, set
             );
         }, 50);
 
-        return () => clearInterval(moveInterval);
+        return () => clearInterval(moveInterval); // Cleanup interval on unmount
     }, [onGameOver, onZombieReachBottom, setHealth]);
 
     const handleZombieHit = (input: string, resetInput: () => void, onScoreUpdate: (points: number) => void) => {

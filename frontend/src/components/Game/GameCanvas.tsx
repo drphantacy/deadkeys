@@ -3,6 +3,7 @@ import useTimer from './hooks/useTimer';
 import useZombies from './hooks/useZombies';
 import Zombie from './Zombie';
 import HealthDisplay from './HealthDisplay';
+import { resetUsedWords } from './utils/wordUtils';
 
 interface GameCanvasProps {
     onGameOver: () => void;
@@ -13,10 +14,11 @@ interface GameCanvasProps {
 const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZombieReachBottom }) => {
     const [playerInput, setPlayerInput] = useState('');
     const [health, setHealth] = useState(3);
+    const [restartSignal, setRestartSignal] = useState(false); // Add restart signal
     const gunSoundRef = useRef<HTMLAudioElement | null>(null);
 
-    const { timeLeft } = useTimer(60, onGameOver);
-    const { zombies, handleZombieHit } = useZombies(onGameOver, onZombieReachBottom, setHealth);
+    const { timeLeft } = useTimer(60, onGameOver); // Use timeLeft from the hook
+    const { zombies, handleZombieHit } = useZombies(onGameOver, onZombieReachBottom, setHealth, restartSignal); // Use zombies from the hook
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setPlayerInput(e.target.value);
@@ -27,6 +29,13 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZo
             gunSoundRef.current.currentTime = 0;
             gunSoundRef.current.play();
         }
+    };
+
+    const restartGame = () => {
+        setPlayerInput(''); // Reset player input
+        setHealth(3); // Reset health
+        resetUsedWords(); // Reset used words
+        setRestartSignal((prev) => !prev); // Toggle restart signal to trigger useEffect
     };
 
     return (
