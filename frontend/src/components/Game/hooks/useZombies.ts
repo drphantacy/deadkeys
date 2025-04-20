@@ -11,12 +11,11 @@ const useZombies = (
     const [zombies, setZombies] = useState<Zombie[]>([]);
 
     useEffect(() => {
-        // Reset zombies and used words on restart
-        setZombies([]); // Clear zombies
-        resetUsedWords(); // Reset used words
+        // Reset zombies, used words, and spawn interval on restart
+        setZombies([]);
+        resetUsedWords();
 
-        // Reinitialize spawning logic
-        const spawnInterval = setInterval(() => {
+        const spawnIntervalId = setInterval(() => {
             const newWord = generateUniqueWord();
             if (newWord) {
                 setZombies((prev) => [
@@ -30,18 +29,19 @@ const useZombies = (
                     },
                 ]);
             }
-        }, 2000);
+        }, 2000); // Fixed spawn interval of 2 seconds
 
-        return () => clearInterval(spawnInterval); // Cleanup interval on unmount or restart
-    }, [restartSignal]); // Restart logic when restartSignal changes
+        return () => clearInterval(spawnIntervalId); // Cleanup interval on unmount or restart
+    }, [restartSignal]);
 
     useEffect(() => {
         const moveInterval = setInterval(() => {
             setZombies((prev) =>
                 prev
-                    .map((z) => ({ ...z, position: z.position + 2 }))
+                    .map((z) => ({ ...z, position: z.position + 2 })) // Move zombies down
                     .filter((z) => {
                         if (z.position >= 400) {
+                            // Zombie reaches the bottom
                             setHealth((prevHealth) => {
                                 const newHealth = prevHealth - 1;
                                 if (newHealth <= 0) {
@@ -52,18 +52,18 @@ const useZombies = (
                                 return newHealth;
                             });
                             onZombieReachBottom();
-                            return false;
+                            return false; // Remove zombie that reaches the bottom
                         }
-                        return true;
+                        return true; // Keep zombie if it hasn't reached the bottom
                     })
             );
-        }, 50);
+        }, 50); // Update every 50ms
 
         return () => clearInterval(moveInterval); // Cleanup interval on unmount
     }, [onGameOver, onZombieReachBottom, setHealth]);
 
     const handleZombieHit = (input: string, resetInput: () => void, onScoreUpdate: (points: number) => void) => {
-        const matchingZombie = zombies.find((z) => z.word.startsWith(input));
+        const matchingZombie = zombies.find((z) => z.word.startsWith(input)); // Compare input including spaces
         if (matchingZombie) {
             const progress = (input.length / matchingZombie.word.length) * 100;
 
@@ -76,8 +76,9 @@ const useZombies = (
             );
 
             if (input === matchingZombie.word) {
+                // Zombie is killed
                 setZombies((prev) => prev.filter((z) => z.id !== matchingZombie.id));
-                onScoreUpdate(10);
+                onScoreUpdate(10); // Award 10 points for each zombie killed
                 resetInput();
             }
         }

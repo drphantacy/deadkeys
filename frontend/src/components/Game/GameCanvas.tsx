@@ -1,9 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import useTimer from './hooks/useTimer';
 import useZombies from './hooks/useZombies';
 import Zombie from './Zombie';
 import HealthDisplay from './HealthDisplay';
-import { resetUsedWords } from './utils/wordUtils';
+import { resetUsedWords, initializeWordLibrary } from './utils/wordUtils';
 
 interface GameCanvasProps {
     onGameOver: () => void;
@@ -19,6 +19,10 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZo
 
     const { timeLeft } = useTimer(60, onGameOver); // Use timeLeft from the hook
     const { zombies, handleZombieHit } = useZombies(onGameOver, onZombieReachBottom, setHealth, restartSignal); // Use zombies from the hook
+
+    useEffect(() => {
+        initializeWordLibrary(); // Initialize the word library before the game starts
+    }, []);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setPlayerInput(e.target.value);
