@@ -1,7 +1,7 @@
 const usedWords: string[] = [];
 let wordLibrary: string[] = [];
 
-// Generate 50 random crypto-related words from a pool of 200 words
+// Generate 80 random crypto-related words from a pool of 200 words
 export const initializeWordLibrary = () => {
     const cryptoWords = [
         'bitcoin', 'ethereum', 'blockchain', 'wallet', 'mining', 'token', 'altcoin', 'ledger', 'hash', 'smart contract',
@@ -27,8 +27,8 @@ export const initializeWordLibrary = () => {
         'total supply', 'max supply', 'inflation rate', 'deflationary', 'burn mechanism', 'minting mechanism', 'staking rewards', 'validator rewards'
     ];
 
-    // Shuffle and pick 50 random words
-    wordLibrary = cryptoWords.sort(() => Math.random() - 0.5).slice(0, 50);
+    // Shuffle and pick 80 random words
+    wordLibrary = cryptoWords.sort(() => Math.random() - 0.5).slice(0, 80);
 };
 
 export const generateUniqueWord = () => {
