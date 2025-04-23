@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useQuery, useMutation, useSubscription } from '@apollo/client';
+import { GET_VALUE, UPDATE_SCORE, VALUE_SUBSCRIPTION } from '../graphql/queries';
 import GameCanvas from './Game/GameCanvas';
 import Leaderboard from './Leaderboard/Leaderboard';
 import GameOver from './Game/GameOver';
@@ -19,12 +21,25 @@ const GameStateManager: React.FC = () => {
     const [screenEffect, setScreenEffect] = useState(false); // Track screen flash and shake effect
     const [lastPage, setLastPage] = useState<'start' | 'playing' | 'gameOver'>('start'); // Track the last page
 
+    const { data: queryData, refetch } = useQuery(GET_VALUE);
+    const [updateScore] = useMutation(UPDATE_SCORE, { onCompleted: () => refetch() });
+    const { data: subData, loading: subLoading, error: subError } = useSubscription(VALUE_SUBSCRIPTION);
+    const chainValue = subData?.value ?? queryData?.value ?? 0;
+
+    // derive a human-friendly connection status
+    const connectionStatus = subError
+        ? 'Disconnected'
+        : subLoading
+        ? 'Connecting...'
+        : 'Connected';
+
     const handleStart = () => {
         setScore(0); // Reset the score
         setGameState('playing'); // Transition to the 'playing' state
     };
 
-    const handleGameOver = () => {
+    const handleGameOver = async () => {
+        await updateScore({ variables: { delta: score } });
         setGameState('gameOver');
     };
 
@@ -54,6 +69,12 @@ const GameStateManager: React.FC = () => {
                 backgroundColor: screenEffect ? 'rgba(255, 0, 0, 0.5)' : 'transparent',
             }}
         >
+            <div style={{ position: 'absolute', top: 10, left: 10 }}>
+                <div style={{ fontSize: '14px' }}>Chain Value: {chainValue}</div>
+                <div style={{ fontSize: '12px', color: subError ? 'red' : subLoading ? 'orange' : 'green' }}>
+                    Status: {connectionStatus}
+                </div>
+            </div>
             <style>
                 {`
                 @keyframes shake {

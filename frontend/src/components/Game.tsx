@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import usePlayerState from '../hooks/usePlayerState';
 import GameCanvas from './GameCanvas'; // Import GameCanvas
+
+// Stub for player state hook; removed Linera provider dependency
+const usePlayerState = (_: string) => ({ savePlayerState: (_: any) => {} });
 
 interface Zombie {
     id: string;
@@ -8,7 +10,7 @@ interface Zombie {
 }
 
 const Game: React.FC = () => {
-    const { playerState, savePlayerState } = usePlayerState('playerId');
+    const { savePlayerState } = usePlayerState('playerId');
     const [zombies, setZombies] = useState<Zombie[]>([]); // Update type to Zombie[]
     const [score, setScore] = useState<number>(0);
     const [lives, setLives] = useState<number>(5); // Initial lives set to 5
