@@ -1,0 +1,14 @@
+{
+  "files": {
+    "main.css": "/deadkeys/static/css/main.fd18eeaa.css",
+    "main.js": "/deadkeys/static/js/main.8db4148b.js",
+    "static/media/linera_web_bg.wasm": "/deadkeys/static/media/linera_web_bg.7769f28fd8d56207397b.wasm",
+    "index.html": "/deadkeys/index.html",
+    "main.fd18eeaa.css.map": "/deadkeys/static/css/main.fd18eeaa.css.map",
+    "main.8db4148b.js.map": "/deadkeys/static/js/main.8db4148b.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.fd18eeaa.css",
+    "static/js/main.8db4148b.js"
+  ]
+}
