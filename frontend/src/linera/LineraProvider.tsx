@@ -44,15 +44,15 @@ export const LineraProvider: React.FC<{ children: ReactNode }> = ({ children }) 
           "10740057db646888014f4942a5d00bdcf648968339950f83b796ee810f6f5d82"
         );
         console.log('Linera init: backend', backend);
-        // setState(prev => ({
-        //   ...prev,
-        //   client: clientInstance,
-        //   wallet,
-        //   chainId,
-        //   backend,
-        //   loading: false,
-        //   status: 'Ready',
-        // }));
+        setState(prev => ({
+          ...prev,
+          client: clientInstance,
+          wallet,
+          chainId,
+          backend,
+          loading: false,
+          status: 'Ready',
+        }));
       } catch (err) {
         console.error('Linera init error', err);
         setState(prev => ({
