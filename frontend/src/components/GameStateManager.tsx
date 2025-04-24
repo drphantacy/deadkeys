@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useSubscription } from '@apollo/client';
-import { GET_VALUE, UPDATE_SCORE, VALUE_SUBSCRIPTION } from '../graphql/queries';
+import React, { useState, useEffect } from 'react';
+import { useLinera } from '../linera/LineraProvider';
 import GameCanvas from './Game/GameCanvas';
 import Leaderboard from './Leaderboard/Leaderboard';
 import GameOver from './Game/GameOver';
@@ -19,19 +18,12 @@ const GameStateManager: React.FC = () => {
         { name: 'Bob', points: 80 },
     ]);
     const [screenEffect, setScreenEffect] = useState(false); // Track screen flash and shake effect
-    const [lastPage, setLastPage] = useState<'start' | 'playing' | 'gameOver'>('start'); // Track the last page
+    const [lastPage, setLastPage] = useState<'start' | 'playing' | 'gameOver'>('start');
+    const { client, backend, chainId, loading: lineraLoading, status, error: lineraError } = useLinera();
 
-    const { data: queryData, refetch } = useQuery(GET_VALUE);
-    const [updateScore] = useMutation(UPDATE_SCORE, { onCompleted: () => refetch() });
-    const { data: subData, loading: subLoading, error: subError } = useSubscription(VALUE_SUBSCRIPTION);
-    const chainValue = subData?.value ?? queryData?.value ?? 0;
-
-    // derive a human-friendly connection status
-    const connectionStatus = subError
-        ? 'Disconnected'
-        : subLoading
-        ? 'Connecting...'
-        : 'Connected';
+    useEffect(() => {
+        // no-op
+    }, [lineraLoading, backend, client]);
 
     const handleStart = () => {
         setScore(0); // Reset the score
@@ -39,7 +31,7 @@ const GameStateManager: React.FC = () => {
     };
 
     const handleGameOver = async () => {
-        await updateScore({ variables: { delta: score } });
+        // Update score logic needs to be implemented using Linera client
         setGameState('gameOver');
     };
 
@@ -70,10 +62,11 @@ const GameStateManager: React.FC = () => {
             }}
         >
             <div style={{ position: 'absolute', top: 10, left: 10 }}>
-                <div style={{ fontSize: '14px' }}>Chain Value: {chainValue}</div>
-                <div style={{ fontSize: '12px', color: subError ? 'red' : subLoading ? 'orange' : 'green' }}>
-                    Status: {connectionStatus}
+                <div style={{ fontSize: '14px' }}>Chain ID: {chainId}</div>
+                <div style={{ fontSize: '12px', color: lineraError ? 'red' : status === 'Ready' ? 'green' : 'orange' }}>
+                    Status: {status === 'Ready' ? 'Ready To Kill' : status}
                 </div>
+                {/* Chain Value removed as not needed */}
             </div>
             <style>
                 {`
