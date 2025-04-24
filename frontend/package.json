@@ -1,13 +1,12 @@
 {
   "name": "deadkeys",
-  "homepage": "https://drphantacy.github.io/deadkeys",
+  "homepage": ".",
   "version": "1.0.0",
   "private": true,
   "scripts": {
     "start": "craco start",
     "build": "craco build",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build",
+    "postbuild": "rm -rf ../docs/frontend/build && mkdir -p ../docs/frontend/build && cp -R build/* ../docs/frontend/build",
     "test": "craco test",
     "eject": "react-scripts eject"
   },
@@ -27,8 +26,7 @@
     "@craco/craco": "^7.1.0",
     "@types/react": "^17.0.2",
     "@types/react-dom": "^17.0.26",
-    "@types/react-router-dom": "^5.3.3",
-    "gh-pages": "^5.0.0"
+    "@types/react-router-dom": "^5.3.3"
   },
   "browserslist": {
     "production": [
