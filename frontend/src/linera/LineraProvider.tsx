@@ -32,6 +32,7 @@ export const LineraProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         console.log('Linera init: WASM loaded');
         const faucet = new linera.Faucet('https://faucet.testnet-babbage.linera.net');
         const wallet = await faucet.createWallet();
+        console.log('Linera init: new wallet', wallet);
         setState(prev => ({ ...prev, status: 'Creating Client' }));
         console.log('Linera init: wallet', wallet);
         const clientInstance = await new linera.Client(wallet);
@@ -40,7 +41,7 @@ export const LineraProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         const chainId = await faucet.claimChain(clientInstance);
         console.log('Linera init: chainId', chainId);
         const backend = await clientInstance.frontend().application(
-          "d42c05544165f040b11e789a54b4754fa304fa16a2777bc16985e3caa6ed17ec"
+          "10740057db646888014f4942a5d00bdcf648968339950f83b796ee810f6f5d82"
         );
         console.log('Linera init: backend', backend);
         setState(prev => ({

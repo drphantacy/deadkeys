@@ -19,10 +19,37 @@ const GameStateManager: React.FC = () => {
     ]);
     const [screenEffect, setScreenEffect] = useState(false); // Track screen flash and shake effect
     const [lastPage, setLastPage] = useState<'start' | 'playing' | 'gameOver'>('start');
+    const [debugScore, setDebugScore] = useState<number>(0);
+    const [debugError, setDebugError] = useState<string | null>(null);
     const { client, backend, chainId, loading: lineraLoading, status, error: lineraError } = useLinera();
 
     useEffect(() => {
-        // no-op
+        if (!lineraLoading && backend && client) {
+            // initial debug fetch
+            (async () => {
+                try {
+                    const resp = await backend.query('{ "query": "query { value }" }');
+                    const { data } = JSON.parse(resp);
+                    setDebugScore(data.value);
+                } catch (err) {
+                    console.error('initial debug fetch error', err);
+                    setDebugError(err instanceof Error ? err.message : String(err));
+                }
+            })();
+            // subscribe to chain updates for debug
+            client.onNotification(async (note: any) => {
+                if (note.reason.NewBlock) {
+                    try {
+                        const resp = await backend.query('{ "query": "query { value }" }');
+                        const { data } = JSON.parse(resp);
+                        setDebugScore(data.value);
+                    } catch (err) {
+                        console.error('subscription debug error', err);
+                        setDebugError(err instanceof Error ? err.message : String(err));
+                    }
+                }
+            });
+        }
     }, [lineraLoading, backend, client]);
 
     const handleStart = () => {
@@ -80,10 +107,42 @@ const GameStateManager: React.FC = () => {
                 `}
             </style>
             {gameState === 'start' && (
-                <StartScreen
-                    onStart={handleStart}
-                    onViewLeaderboard={handleViewLeaderboard}
-                />
+                <div>
+                    <StartScreen onStart={handleStart} onViewLeaderboard={handleViewLeaderboard} />
+                    <div style={{ marginTop: '10px' }}>
+                        <button onClick={async () => {
+                            if (!backend) return;
+                            try {
+                                const resp = await backend.query('{ "query": "mutation { updateScore(value: 1) }" }');
+                                console.log('mutation result', resp);
+                            } catch (err) {
+                                console.error('mutation error', err);
+                            }
+                        }}>Test Update Score</button>
+                        <button
+                            style={{ marginLeft: '10px' }}
+                            onClick={async () => {
+                                if (!backend) return;
+                                try {
+                                    const resp = await backend.query('{ "query": "query { value }" }');
+                                    const { data } = JSON.parse(resp);
+                                    setDebugScore(data.value);
+                                } catch (err) {
+                                    console.error('fetch value error', err);
+                                    setDebugError(err instanceof Error ? err.message : String(err));
+                                }
+                            }}
+                        >
+                            Fetch Value
+                        </button>
+                        <span style={{ marginLeft: '10px' }}>Test Score: {debugScore}</span>
+                        {debugError && (
+                            <div style={{ color: 'red', fontSize: '12px', marginTop: '4px' }}>
+                                Error fetching score: {debugError}
+                            </div>
+                        )}
+                    </div>
+                </div>
             )}
             {gameState === 'playing' && (
                 <GameCanvas
