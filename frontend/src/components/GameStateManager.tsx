@@ -4,6 +4,7 @@ import GameCanvas from './Game/GameCanvas';
 import Leaderboard from './Leaderboard/Leaderboard';
 import GameOver from './Game/GameOver';
 import StartScreen from './UI/StartScreen';
+import OnboardingScreen from './UI/OnboardingScreen';
 
 interface LeaderboardEntry {
     name: string;
@@ -11,7 +12,9 @@ interface LeaderboardEntry {
 }
 
 const GameStateManager: React.FC = () => {
-    const [gameState, setGameState] = useState<'start' | 'playing' | 'gameOver' | 'leaderboard'>('start');
+    const [gameState, setGameState] = useState<'onboarding' | 'start' | 'playing' | 'gameOver' | 'leaderboard'>(() =>
+        localStorage.getItem('seenOnboarding') ? 'start' : 'onboarding'
+    );
     const [score, setScore] = useState(0);
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([
         { name: 'Alice', points: 100 },
@@ -29,18 +32,6 @@ const GameStateManager: React.FC = () => {
 
     useEffect(() => {
         if (!lineraLoading && application && client) {
-            // initial debug fetch
-            // (async () => {
-            //     try {
-            //         const resp = await application.query('{ "query": "query { value }" }');
-            //         const { data } = JSON.parse(resp);
-            //         setDebugScore(data.value);
-            //     } catch (err) {
-            //         console.error('initial debug fetch error', err);
-            //         setDebugError(err instanceof Error ? err.message : String(err));
-            //     }
-            // })();
-            // subscribe to chain updates for debug
             client.onNotification(async (note: any) => {
                 if (note.reason.NewBlock) {
                     try {
@@ -83,6 +74,21 @@ const GameStateManager: React.FC = () => {
         setGameState('leaderboard');
     };
 
+    // Onboarding flow handlers
+    const handleOnboardingStart = () => {
+        localStorage.setItem('seenOnboarding', 'true');
+        setGameState('start');
+    };
+    const handleHowTo = () => {
+        setGameState('onboarding');
+    };
+
+    // DEBUG: reset onboarding state
+    const handleResetOnboarding = () => {
+        localStorage.removeItem('seenOnboarding');
+        setGameState('onboarding');
+    };
+
     return (
         <div
             style={{
@@ -110,9 +116,26 @@ const GameStateManager: React.FC = () => {
                 }
                 `}
             </style>
+            {/* DEBUG: reset onboarding for testing */}
+            <button
+                onClick={handleResetOnboarding}
+                style={{
+                    position: 'absolute',
+                    bottom: 10,
+                    right: 10,
+                    fontSize: '12px',
+                    padding: '4px 8px',
+                    cursor: 'pointer',
+                }}
+            >
+                Reset Onboarding
+            </button>
+            {gameState === 'onboarding' && (
+                <OnboardingScreen onStart={handleOnboardingStart} />
+            )}
             {gameState === 'start' && (
                 <div>
-                    <StartScreen onStart={handleStart} onViewLeaderboard={handleViewLeaderboard} />
+                    <StartScreen onStart={handleStart} onHowTo={handleHowTo} onViewLeaderboard={handleViewLeaderboard} />
                     <div style={{ marginTop: '10px' }}>
                         <button onClick={async () => {
                             if (!application) return;
