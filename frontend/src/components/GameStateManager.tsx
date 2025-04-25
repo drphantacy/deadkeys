@@ -5,30 +5,14 @@ import Leaderboard from './Leaderboard/Leaderboard';
 import GameOver from './Game/GameOver';
 import StartScreen from './UI/StartScreen';
 import OnboardingScreen from './UI/OnboardingScreen';
-
-interface LeaderboardEntry {
-    name: string;
-    points: number;
-}
+import { useLeaderboard } from '../hooks/useLeaderboard';
 
 const GameStateManager: React.FC = () => {
     const [gameState, setGameState] = useState<'onboarding' | 'start' | 'playing' | 'gameOver' | 'leaderboard'>(() =>
         localStorage.getItem('seenOnboarding') ? 'start' : 'onboarding'
     );
     const [score, setScore] = useState(0);
-    // Dummy leaderboard entries for demonstration
-    const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([
-        { name: 'Alice', points: 1500 },
-        { name: 'Bob', points: 1400 },
-        { name: 'Carol', points: 1300 },
-        { name: 'Dave', points: 1200 },
-        { name: 'Eve', points: 1100 },
-        { name: 'Frank', points: 1000 },
-        { name: 'Grace', points: 900 },
-        { name: 'Heidi', points: 800 },
-        { name: 'Ivan', points: 700 },
-        { name: 'Judy', points: 600 },
-    ]);
+    const [leaderboard, setLeaderboard] = useLeaderboard();
     const [screenEffect, setScreenEffect] = useState(false); // Track screen flash and shake effect
     const [lastPage, setLastPage] = useState<'start' | 'playing' | 'gameOver'>('start');
     const [debugScore, setDebugScore] = useState<number>(0);
@@ -139,77 +123,75 @@ const GameStateManager: React.FC = () => {
             >
                 Reset Onboarding
             </button>
-            {gameState === 'onboarding' && (
-                <OnboardingScreen onStart={handleOnboardingStart} />
-            )}
-            {gameState === 'start' && (
-                <div>
-                    <StartScreen onStart={handleStart} onHowTo={handleHowTo} onViewLeaderboard={handleViewLeaderboard} />
-                    <div style={{ marginTop: '10px' }}>
-                        <button onClick={async () => {
-                            if (!application) return;
-                            try {
-                                const resp = await application.query('{ "query": "mutation { updateScore(value: 1) }" }');
-                                console.log('mutation result', resp);
-                            } catch (err) {
-                                console.error('mutation error', err);
-                            }
-                        }}>Test Update Score</button>
-                        <button
-                            style={{ marginLeft: '10px' }}
-                            onClick={async () => {
-                                if (!application) return;
-                                try {
-                                    const resp = await application.query('{ "query": "query { value }" }');
-                                    console.log(resp);
-                                    const { data } = JSON.parse(resp);
-                                    setDebugScore(data.value);
-                                } catch (err) {
-                                    console.error('fetch value error', err);
-                                    setDebugError(err instanceof Error ? err.message : String(err));
-                                }
-                            }}
-                        >
-                            Fetch Value
-                        </button>
-                        <span style={{ marginLeft: '10px' }}>Test Score: {debugScore}</span>
-                        {debugError && (
-                            <div style={{ color: 'red', fontSize: '12px', marginTop: '4px' }}>
-                                Error fetching score: {debugError}
+            {/* Render current screen via lookup */}
+            {(() => {
+                const screens: Record<typeof gameState, React.ReactNode> = {
+                    onboarding: <OnboardingScreen onStart={handleOnboardingStart} />, // Onboarding
+                    start: (
+                        <div>
+                            <StartScreen onStart={handleStart} onHowTo={handleHowTo} onViewLeaderboard={handleViewLeaderboard} />
+                            <div style={{ marginTop: '10px' }}>
+                                <button onClick={async () => {
+                                    if (!application) return;
+                                    try {
+                                        const resp = await application.query('{ "query": "mutation { updateScore(value: 1) }" }');
+                                        console.log('mutation result', resp);
+                                    } catch (err) {
+                                        console.error('mutation error', err);
+                                    }
+                                }}>Test Update Score</button>
+                                <button
+                                    style={{ marginLeft: '10px' }}
+                                    onClick={async () => {
+                                        if (!application) return;
+                                        try {
+                                            const resp = await application.query('{ "query": "query { value }" }');
+                                            console.log(resp);
+                                            const { data } = JSON.parse(resp);
+                                            setDebugScore(data.value);
+                                        } catch (err) {
+                                            console.error('fetch value error', err);
+                                            setDebugError(err instanceof Error ? err.message : String(err));
+                                        }
+                                    }}
+                                >
+                                    Fetch Value
+                                </button>
+                                <span style={{ marginLeft: '10px' }}>Test Score: {debugScore}</span>
+                                {debugError && (
+                                    <div style={{ color: 'red', fontSize: '12px', marginTop: '4px' }}>
+                                        Error fetching score: {debugError}
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
-                </div>
-            )}
-            {gameState === 'playing' && (
-                <GameCanvas
-                    onGameOver={handleGameOver}
-                    onScoreUpdate={(points: number) => setScore((prev) => prev + points)}
-                    onZombieReachBottom={triggerScreenEffect}
-                />
-            )}
-            {gameState === 'gameOver' && (
-                <div>
-                    <GameOver score={score} onRestart={handleRestart} />
-                    <button
-                        onClick={handleViewLeaderboard}
-                        style={{ marginTop: '10px' }}
-                    >
-                        View Leaderboard
-                    </button>
-                </div>
-            )}
-            {gameState === 'leaderboard' && (
-                <div className="leaderboard-screen">
-                    <Leaderboard scores={leaderboard} />
-                    <button
-                        onClick={() => setGameState(lastPage)} // Return to the last page
-                        style={{ marginTop: '10px' }}
-                    >
-                        Close
-                    </button>
-                </div>
-            )}
+                        </div>
+                    ),
+                    playing: (
+                        <GameCanvas
+                            onGameOver={handleGameOver}
+                            onScoreUpdate={(points: number) => setScore((prev) => prev + points)}
+                            onZombieReachBottom={triggerScreenEffect}
+                        />
+                    ),
+                    gameOver: (
+                        <div>
+                            <GameOver score={score} onRestart={handleRestart} />
+                            <button onClick={handleViewLeaderboard} style={{ marginTop: '10px' }}>
+                                View Leaderboard
+                            </button>
+                        </div>
+                    ),
+                    leaderboard: (
+                        <div className="leaderboard-screen">
+                            <Leaderboard scores={leaderboard} />
+                            <button onClick={() => setGameState(lastPage)} style={{ marginTop: '10px' }}>
+                                Close
+                            </button>
+                        </div>
+                    ),
+                };
+                return screens[gameState];
+            })()}
         </div>
     );
 };
