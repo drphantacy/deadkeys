@@ -1,4 +1,13 @@
 {
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
+        { "key": "Cross-Origin-Embedder-Policy", "value": "require-corp" }
+      ]
+    }
+  ],
   "rewrites": [
     { "source": "/rpc.v1", "destination": "https://linera-testnet.chainbase.online/rpc.v1" },
     { "source": "/rpc.v1/:path*", "destination": "https://linera-testnet.chainbase.online/rpc.v1/:path*" },
