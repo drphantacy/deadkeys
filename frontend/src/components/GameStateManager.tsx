@@ -42,16 +42,16 @@ const GameStateManager: React.FC = () => {
             // })();
             // subscribe to chain updates for debug
             client.onNotification(async (note: any) => {
-                // if (note.reason.NewBlock) {
-                //     try {
-                //         const resp = await application.query('{ "query": "query { value }" }');
-                //         const { data } = JSON.parse(resp);
-                //         setDebugScore(data.value);
-                //     } catch (err) {
-                //         console.error('subscription debug error', err);
-                //         setDebugError(err instanceof Error ? err.message : String(err));
-                //     }
-                // }
+                if (note.reason.NewBlock) {
+                    try {
+                        const resp = await application.query('{ "query": "query { value }" }');
+                        const { data } = JSON.parse(resp);
+                        setDebugScore(data.value);
+                    } catch (err) {
+                        console.error('subscription debug error', err);
+                        setDebugError(err instanceof Error ? err.message : String(err));
+                    }
+                }
             });
         }
     }, [lineraLoading, application, client]);
