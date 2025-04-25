@@ -1,0 +1,9 @@
+{
+  "rewrites": [
+    { "source": "/rpc.v1", "destination": "https://linera-testnet.chainbase.online/rpc.v1" },
+    { "source": "/rpc.v1/:path*", "destination": "https://linera-testnet.chainbase.online/rpc.v1/:path*" },
+    { "source": "/faucet.v1", "destination": "https://faucet.testnet-babbage.linera.net/faucet.v1" },
+    { "source": "/faucet.v1/:path*", "destination": "https://faucet.testnet-babbage.linera.net/faucet.v1/:path*" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
