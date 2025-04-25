@@ -44,12 +44,6 @@ export const LineraProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         const application = await clientInstance.frontend().application(
           "10740057db646888014f4942a5d00bdcf648968339950f83b796ee810f6f5d82"
         );
-        console.log('Linera init: application', application);
-        console.log('Linera init: application', application.query);
-        // const response = await application.query('{ "query": "mutation { increment(value: 1) }" }');
-        // console.log('Linera init: application response', response);
-        // const resp = await application.query('{ query { value }');
-        // console.log('Linera init: application query', resp);
         setState(prev => ({
           ...prev,
           client: clientInstance,
