@@ -4,4 +4,5 @@ export interface Zombie {
     position: number; // Vertical position of the zombie
     left: number; // Horizontal position of the zombie
     health: number;
+    spawnTime: number; // Timestamp when the zombie was spawned
 }

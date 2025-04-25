@@ -18,14 +18,16 @@ const useZombies = (
         const spawnIntervalId = setInterval(() => {
             const newWord = generateUniqueWord();
             if (newWord) {
+                const now = Date.now();
                 setZombies((prev) => [
                     ...prev,
                     {
-                        id: Date.now(),
+                        id: now,
                         word: newWord,
                         position: 0,
                         left: Math.random() * 90,
                         health: 100,
+                        spawnTime: now,
                     },
                 ]);
             }
@@ -62,7 +64,7 @@ const useZombies = (
         return () => clearInterval(moveInterval); // Cleanup interval on unmount
     }, [onGameOver, onZombieReachBottom, setHealth]);
 
-    const handleZombieHit = (input: string, resetInput: () => void, onScoreUpdate: (points: number) => void) => {
+    const handleZombieHit = (input: string, resetInput: () => void, onScoreUpdate: (points: number) => void, onWpmUpdate?: (wpm: number) => void) => {
         const matchingZombie = zombies.find((z) => z.word.startsWith(input)); // Compare input including spaces
         if (matchingZombie) {
             const progress = (input.length / matchingZombie.word.length) * 100;
@@ -76,9 +78,16 @@ const useZombies = (
             );
 
             if (input === matchingZombie.word) {
-                // Zombie is killed
+                // Zombie is killed, compute score and WPM bonus
+                const now = Date.now();
+                const elapsedSec = (now - matchingZombie.spawnTime) / 1000;
+                const chars = matchingZombie.word.length;
+                const wpm = Math.round((chars * 60) / (5 * elapsedSec));
+                const basePoints = 10;
+                const points = basePoints + wpm;
                 setZombies((prev) => prev.filter((z) => z.id !== matchingZombie.id));
-                onScoreUpdate(10); // Award 10 points for each zombie killed
+                onScoreUpdate(points);
+                if (onWpmUpdate) onWpmUpdate(wpm);
                 resetInput();
             }
         }

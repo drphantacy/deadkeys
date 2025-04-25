@@ -14,7 +14,9 @@ interface GameCanvasProps {
 const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZombieReachBottom }) => {
     const [playerInput, setPlayerInput] = useState('');
     const [health, setHealth] = useState(3);
-    const [score, setScore] = useState(0); // Add score state
+    const [score, setScore] = useState(0); // Score state
+    // Track best WPM for kills
+    const [bestWpm, setBestWpm] = useState(0);
     const [restartSignal, setRestartSignal] = useState(false); // Add restart signal
     const gunSoundRef = useRef<HTMLAudioElement | null>(null);
     const inputRef = useRef<HTMLInputElement | null>(null); // Ref for the input box
@@ -34,8 +36,14 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZo
     }, [restartSignal]); // Triggered when restartSignal changes
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setPlayerInput(e.target.value);
-        handleZombieHit(e.target.value, () => setPlayerInput(''), (points) => setScore((prev) => prev + points)); // Update score
+        const input = e.target.value;
+        setPlayerInput(input);
+        handleZombieHit(
+            input,
+            () => setPlayerInput(''),
+            (points) => setScore((prev) => prev + points),
+            (wpm: number) => setBestWpm((prev) => Math.max(prev, wpm))
+        );
 
         // Play gun sound
         if (gunSoundRef.current) {
@@ -48,6 +56,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZo
         setPlayerInput(''); // Reset player input
         setHealth(3); // Reset health
         setScore(0); // Reset score
+        setBestWpm(0); // Reset best WPM
         resetUsedWords(); // Reset used words
         setRestartSignal((prev) => !prev); // Toggle restart signal to trigger useEffect
 
@@ -61,8 +70,13 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZo
         <div>
             <audio ref={gunSoundRef} src="/sounds/gunshot.mp3" preload="auto"></audio>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>Score: {score}</div> {/* Show score on the left */}
-                <div style={{ textAlign: 'center', flex: 1 }}>Time Left: {timeLeft}s</div> {/* Timer in the middle */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                    <div>Score: {score}</div>
+                    <div style={{ fontSize: '14px', opacity: 0.7 }}>
+                        Typing Speed: {bestWpm} WPM
+                    </div>
+                </div>
+                <div style={{ textAlign: 'center', flex: 1 }}>Time Left: {timeLeft}s</div>
                 <div style={{ display: 'flex', gap: '5px' }}>
                     {Array.from({ length: health }).map((_, index) => (
                         <div
