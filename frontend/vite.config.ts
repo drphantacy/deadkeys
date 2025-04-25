@@ -2,8 +2,12 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
+  // ensure relative asset paths for GitHub Pages
+  base: './',
   plugins: [react()],
   build: {
+    // output to 'build' to match GitHub Pages docs setup
+    outDir: 'build',
     rollupOptions: {
       input: {
         index: 'index.html',
