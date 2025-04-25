@@ -16,9 +16,18 @@ const GameStateManager: React.FC = () => {
         localStorage.getItem('seenOnboarding') ? 'start' : 'onboarding'
     );
     const [score, setScore] = useState(0);
+    // Dummy leaderboard entries for demonstration
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([
-        { name: 'Alice', points: 100 },
-        { name: 'Bob', points: 80 },
+        { name: 'Alice', points: 1500 },
+        { name: 'Bob', points: 1400 },
+        { name: 'Carol', points: 1300 },
+        { name: 'Dave', points: 1200 },
+        { name: 'Eve', points: 1100 },
+        { name: 'Frank', points: 1000 },
+        { name: 'Grace', points: 900 },
+        { name: 'Heidi', points: 800 },
+        { name: 'Ivan', points: 700 },
+        { name: 'Judy', points: 600 },
     ]);
     const [screenEffect, setScreenEffect] = useState(false); // Track screen flash and shake effect
     const [lastPage, setLastPage] = useState<'start' | 'playing' | 'gameOver'>('start');
