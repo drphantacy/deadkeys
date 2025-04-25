@@ -130,8 +130,8 @@ const GameStateManager: React.FC = () => {
                                 try {
                                     const resp = await application.query('{ "query": "query { value }" }');
                                     console.log(resp);
-                                    // const { data } = JSON.parse(resp);
-                                    // setDebugScore(data.value);
+                                    const { data } = JSON.parse(resp);
+                                    setDebugScore(data.value);
                                 } catch (err) {
                                     console.error('fetch value error', err);
                                     setDebugError(err instanceof Error ? err.message : String(err));
