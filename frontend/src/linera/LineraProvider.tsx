@@ -8,7 +8,7 @@ interface LineraContextType {
   client?: linera.Client;
   wallet?: linera.Wallet;
   chainId?: string;
-  backend?: any;
+  application?: linera.Application;
   loading: boolean;
   status: 'Loading' | 'Creating Wallet' | 'Creating Client' | 'Creating Chain' | 'Ready';
   error?: Error;
@@ -39,17 +39,23 @@ export const LineraProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setState(prev => ({ ...prev, status: 'Creating Chain' }));
         console.log('Linera init: client', clientInstance);
         const chainId = await faucet.claimChain(clientInstance);
-        console.log('Linera init: chainId', chainId);
-        const backend = await clientInstance.frontend().application(
+        console.log('Linera init: application: chainId', chainId);
+       
+        const application = await clientInstance.frontend().application(
           "10740057db646888014f4942a5d00bdcf648968339950f83b796ee810f6f5d82"
         );
-        console.log('Linera init: backend', backend);
+        console.log('Linera init: application', application);
+        console.log('Linera init: application', application.query);
+        // const response = await application.query('{ "query": "mutation { increment(value: 1) }" }');
+        // console.log('Linera init: application response', response);
+        // const resp = await application.query('{ query { value }');
+        // console.log('Linera init: application query', resp);
         setState(prev => ({
           ...prev,
           client: clientInstance,
           wallet,
           chainId,
-          backend,
+          application,
           loading: false,
           status: 'Ready',
         }));

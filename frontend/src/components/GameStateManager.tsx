@@ -21,36 +21,40 @@ const GameStateManager: React.FC = () => {
     const [lastPage, setLastPage] = useState<'start' | 'playing' | 'gameOver'>('start');
     const [debugScore, setDebugScore] = useState<number>(0);
     const [debugError, setDebugError] = useState<string | null>(null);
-    const { client, backend, chainId, loading: lineraLoading, status, error: lineraError } = useLinera();
+    const { client, application, chainId, loading: lineraLoading, status, error: lineraError } = useLinera();
 
     useEffect(() => {
-        if (!lineraLoading && backend && client) {
+        console.log('GameStateManager - chainId from context:', chainId);
+    }, [chainId]);
+
+    useEffect(() => {
+        if (!lineraLoading && application && client) {
             // initial debug fetch
-            (async () => {
-                try {
-                    const resp = await backend.query('{ "query": "query { value }" }');
-                    const { data } = JSON.parse(resp);
-                    setDebugScore(data.value);
-                } catch (err) {
-                    console.error('initial debug fetch error', err);
-                    setDebugError(err instanceof Error ? err.message : String(err));
-                }
-            })();
+            // (async () => {
+            //     try {
+            //         const resp = await application.query('{ "query": "query { value }" }');
+            //         const { data } = JSON.parse(resp);
+            //         setDebugScore(data.value);
+            //     } catch (err) {
+            //         console.error('initial debug fetch error', err);
+            //         setDebugError(err instanceof Error ? err.message : String(err));
+            //     }
+            // })();
             // subscribe to chain updates for debug
             client.onNotification(async (note: any) => {
-                if (note.reason.NewBlock) {
-                    try {
-                        const resp = await backend.query('{ "query": "query { value }" }');
-                        const { data } = JSON.parse(resp);
-                        setDebugScore(data.value);
-                    } catch (err) {
-                        console.error('subscription debug error', err);
-                        setDebugError(err instanceof Error ? err.message : String(err));
-                    }
-                }
+                // if (note.reason.NewBlock) {
+                //     try {
+                //         const resp = await application.query('{ "query": "query { value }" }');
+                //         const { data } = JSON.parse(resp);
+                //         setDebugScore(data.value);
+                //     } catch (err) {
+                //         console.error('subscription debug error', err);
+                //         setDebugError(err instanceof Error ? err.message : String(err));
+                //     }
+                // }
             });
         }
-    }, [lineraLoading, backend, client]);
+    }, [lineraLoading, application, client]);
 
     const handleStart = () => {
         setScore(0); // Reset the score
@@ -89,7 +93,7 @@ const GameStateManager: React.FC = () => {
             }}
         >
             <div style={{ position: 'absolute', top: 10, left: 10 }}>
-                <div style={{ fontSize: '14px' }}>Chain ID: {chainId}</div>
+                <div style={{ fontSize: '14px' }}>Chain ID: {chainId || 'Loading...'}</div>
                 <div style={{ fontSize: '12px', color: lineraError ? 'red' : status === 'Ready' ? 'green' : 'orange' }}>
                     Status: {status === 'Ready' ? 'Ready To Kill' : status}
                 </div>
@@ -111,9 +115,9 @@ const GameStateManager: React.FC = () => {
                     <StartScreen onStart={handleStart} onViewLeaderboard={handleViewLeaderboard} />
                     <div style={{ marginTop: '10px' }}>
                         <button onClick={async () => {
-                            if (!backend) return;
+                            if (!application) return;
                             try {
-                                const resp = await backend.query('{ "query": "mutation { updateScore(value: 1) }" }');
+                                const resp = await application.query('{ "query": "mutation { updateScore(value: 1) }" }');
                                 console.log('mutation result', resp);
                             } catch (err) {
                                 console.error('mutation error', err);
@@ -122,11 +126,12 @@ const GameStateManager: React.FC = () => {
                         <button
                             style={{ marginLeft: '10px' }}
                             onClick={async () => {
-                                if (!backend) return;
+                                if (!application) return;
                                 try {
-                                    const resp = await backend.query('{ "query": "query { value }" }');
-                                    const { data } = JSON.parse(resp);
-                                    setDebugScore(data.value);
+                                    const resp = await application.query('{ "query": "query { value }" }');
+                                    console.log(resp);
+                                    // const { data } = JSON.parse(resp);
+                                    // setDebugScore(data.value);
                                 } catch (err) {
                                     console.error('fetch value error', err);
                                     setDebugError(err instanceof Error ? err.message : String(err));
