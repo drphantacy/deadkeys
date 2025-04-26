@@ -47,13 +47,15 @@ const useZombies = (
                             setHealth((prevHealth) => {
                                 const newHealth = prevHealth - 1;
                                 if (newHealth <= 0) {
-                                    onGameOver();
+                                    // Defer game over to avoid state update during render
+                                    setTimeout(onGameOver, 0);
                                     setZombies([]); // Clear zombies on game over
                                     resetUsedWords(); // Reset used words on game over
                                 }
                                 return newHealth;
                             });
-                            onZombieReachBottom();
+                            // Defer screen effect to avoid nested state update
+                            setTimeout(onZombieReachBottom, 0);
                             return false; // Remove zombie that reaches the bottom
                         }
                         return true; // Keep zombie if it hasn't reached the bottom
@@ -85,9 +87,13 @@ const useZombies = (
                 const wpm = Math.round((chars * 60) / (5 * elapsedSec));
                 const basePoints = 10;
                 const points = basePoints + wpm;
+                // Remove zombie
                 setZombies((prev) => prev.filter((z) => z.id !== matchingZombie.id));
-                onScoreUpdate(points);
-                if (onWpmUpdate) onWpmUpdate(wpm);
+                // Log zombie kill and defer score update to avoid setState-in-render
+                console.log('zombie kill', { id: matchingZombie.id, word: matchingZombie.word, points });
+                setTimeout(() => onScoreUpdate(points), 0);
+                // Defer WPM update if provided
+                if (onWpmUpdate) setTimeout(() => onWpmUpdate(wpm), 0);
                 resetInput();
             }
         }

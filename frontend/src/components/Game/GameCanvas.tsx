@@ -41,7 +41,11 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZo
         handleZombieHit(
             input,
             () => setPlayerInput(''),
-            (points) => setScore((prev) => prev + points),
+            (points) => {
+                setScore((prev) => prev + points);
+                console.log('Local onScoreUpdate triggered with points:', points);
+                onScoreUpdate(points);
+            },
             (wpm: number) => setBestWpm((prev) => Math.max(prev, wpm))
         );
 

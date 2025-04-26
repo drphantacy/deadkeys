@@ -31,10 +31,13 @@ const GameStateManager: React.FC = () => {
             client.onNotification(async (note: any) => {
                 if (note.reason.NewBlock) {
                     try {
+                        console.log('Subscription NewBlock received, querying score');
                         const resp = await application.query(
                             JSON.stringify({ query: `query { score(gameId:"${gameId}") }` })
                         );
+                        console.log('Subscription response:', resp);
                         const { data } = JSON.parse(resp);
+                        console.log('Subscription new score for', gameId, ':', data.score);
                         setChainScore(data.score);
                     } catch (err) {
                         console.error('subscription error', err);
@@ -151,10 +154,13 @@ const GameStateManager: React.FC = () => {
                                 <button onClick={async () => {
                                     if (!application || !gameId) return;
                                     try {
+                                        console.log('Sending updateScore', { gameId, value: 1 });
                                         const resp = await application.query(
-                                            JSON.stringify({ query: `mutation { updateScore(gameId:\"${gameId}\", value:1) }` })
+                                            JSON.stringify({ query: `mutation { updateScore(gameId:"${gameId}", value:1) }` })
                                         );
-                                        console.log('mutation result', resp);
+                                        console.log('updateScore mutation response:', resp);
+                                        const result = JSON.parse(resp).data.updateScore;
+                                        console.log('updateScore result:', result);
                                     } catch (err) {
                                         console.error('mutation error', err);
                                     }
@@ -164,11 +170,13 @@ const GameStateManager: React.FC = () => {
                                     onClick={async () => {
                                         if (!application || !gameId) return;
                                         try {
+                                            console.log('Sending fetchScore', { gameId });
                                             const resp = await application.query(
                                                 JSON.stringify({ query: `query { score(gameId:"${gameId}") }` })
                                             );
-                                            console.log(resp);
+                                            console.log('fetchScore response:', resp);
                                             const { data } = JSON.parse(resp);
+                                            console.log('fetchScore result:', data.score);
                                             setChainScore(data.score);
                                         } catch (err) {
                                             console.error('fetch score error', err);
@@ -195,9 +203,13 @@ const GameStateManager: React.FC = () => {
                                 setScore((prev) => prev + points);
                                 if (!application || !gameId) return;
                                 try {
-                                    await application.query(
+                                    console.log('Sending updateScore', { gameId, value: points });
+                                    const resp = await application.query(
                                         JSON.stringify({ query: `mutation { updateScore(gameId:"${gameId}", value:${points}) }` })
                                     );
+                                    console.log('updateScore mutation response:', resp);
+                                    const result = JSON.parse(resp).data.updateScore;
+                                    console.log('updateScore result:', result);
                                 } catch (err) {
                                     console.error('updateScore error', err);
                                 }
