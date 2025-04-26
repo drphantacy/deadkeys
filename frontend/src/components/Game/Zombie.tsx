@@ -15,6 +15,8 @@ interface ZombieProps {
 const Zombie: React.FC<ZombieProps> = ({ zombie }) => (
     <div
         style={{
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
             position: 'absolute',
             top: `${zombie.position}px`,
             left: `${zombie.left}%`,
@@ -26,6 +28,9 @@ const Zombie: React.FC<ZombieProps> = ({ zombie }) => (
             color: 'white',
             lineHeight: '30px',
         }}
+        onCopy={e => e.preventDefault()}
+        onCut={e => e.preventDefault()}
+        onContextMenu={e => e.preventDefault()}
     >
         {zombie.word}
         <div
