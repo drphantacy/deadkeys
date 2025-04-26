@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 
 interface OnboardingScreenProps {
   onStart: () => void;
+  disabled?: boolean;
 }
 
-const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onStart }) => {
+const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onStart, disabled }) => {
   const [showNudge, setShowNudge] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const targetWord = 'gmicrochains';
@@ -133,10 +134,12 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onStart }) => {
       ) : (
         <button
           onClick={onStart}
+          disabled={disabled}
           style={{
             fontSize: '20px',
             padding: '10px 20px',
-            cursor: 'pointer',
+            cursor: disabled ? 'not-allowed' : 'pointer',
+            opacity: disabled ? 0.5 : 1,
             fontFamily: 'monospace',
             marginTop: '10px',
           }}

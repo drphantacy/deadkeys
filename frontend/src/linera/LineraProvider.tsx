@@ -42,7 +42,7 @@ export const LineraProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         console.log('Linera init: application: chainId', chainId);
        
         const application = await clientInstance.frontend().application(
-          "10740057db646888014f4942a5d00bdcf648968339950f83b796ee810f6f5d82"
+          "10b6208e85bbf14f4db623b8a018b35b5bc701c83f21dd239226b6d2762258bd"
         );
         setState(prev => ({
           ...prev,
