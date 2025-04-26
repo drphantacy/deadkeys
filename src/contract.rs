@@ -5,9 +5,10 @@
 
 mod state;
 
-use deadkeys::DeadKeysAbi; // Import DeadKeysAbi from lib.rs
+use deadkeys::{DeadKeysAbi, Operation}; // Import ABI and Operation struct
 use linera_sdk::{
     linera_base_types::WithContractAbi,
+    util::BlockingWait as _,        // For synchronous MapView.get in contract
     views::{RootView, View},
     Contract, ContractRuntime,
 };
@@ -38,17 +39,27 @@ impl Contract for DeadKeysContract {
         DeadKeysContract { state, runtime }
     }
 
-    async fn instantiate(&mut self, value: u64) {
+    async fn instantiate(&mut self, _initial_value: u64) {
         // Validate that the application parameters were configured correctly.
         self.runtime.application_parameters();
-
-        self.state.value.set(value);
+        // No initial scores to set.
     }
 
-    async fn execute_operation(&mut self, operation: u64) -> u64 {
-        let new_value = self.state.value.get() + operation;
-        self.state.value.set(new_value);
-        new_value
+    async fn execute_operation(&mut self, operation: Operation) -> u64 {
+        // Read existing score synchronously in contract context
+        let current = self.state
+            .scores
+            .get(&operation.game_id)
+            .blocking_wait()          // sync wait for get future
+            .unwrap_or_default()      // Result<Option<u64>, _> -> Option<u64>
+            .unwrap_or_default();     // Option<u64> -> u64
+        let new_score = current + operation.value;
+        // Persist updated score immediately
+        self.state
+            .scores
+            .insert(&operation.game_id, new_score)
+            .expect("Failed to insert score");
+        new_score
     }
 
     async fn execute_message(&mut self, _message: ()) {
@@ -63,26 +74,33 @@ impl Contract for DeadKeysContract {
 #[cfg(test)]
 mod tests {
     use futures::FutureExt as _;
+    use linera_sdk::util::BlockingWait as _;
     use linera_sdk::{util::BlockingWait, views::View, Contract, ContractRuntime};
-
+    use deadkeys::Operation;
     use super::{DeadKeysContract, DeadKeysState};
 
     #[test]
     fn operation() {
-        let initial_value = 72_u64;
-        let mut DeadKeys = create_and_instantiate_DeadKeys(initial_value);
-
+        let mut contract = create_and_instantiate_DeadKeys(0);
         let increment = 42_308_u64;
+        let op = Operation { game_id: "game1".to_string(), value: increment };
 
-        let response = DeadKeys
-            .execute_operation(increment)
+        // Execute operation
+        let response = contract
+            .execute_operation(op.clone())
             .now_or_never()
             .expect("Execution of DeadKeys operation should not await anything");
-
-        let expected_value = initial_value + increment;
-
+        let expected_value = increment;
         assert_eq!(response, expected_value);
-        assert_eq!(*DeadKeys.state.value.get(), initial_value + increment);
+
+        // Verify stored value via blocking wait
+        let stored = contract
+            .state
+            .scores
+            .get("game1")
+            .blocking_wait()
+            .expect("Failed to get score");
+        assert_eq!(stored.unwrap_or_default(), expected_value);
     }
 
     #[test]
@@ -99,23 +117,27 @@ mod tests {
 
     #[test]
     fn cross_application_call() {
-        let initial_value = 2_845_u64;
-        let mut DeadKeys = create_and_instantiate_DeadKeys(initial_value);
-
+        let mut contract = create_and_instantiate_DeadKeys(0);
         let increment = 8_u64;
+        let op = Operation { game_id: "game2".to_string(), value: increment };
 
-        let response = DeadKeys
-            .execute_operation(increment)
+        let response = contract
+            .execute_operation(op.clone())
             .now_or_never()
             .expect("Execution of DeadKeys operation should not await anything");
-
-        let expected_value = initial_value + increment;
-
+        let expected_value = increment;
         assert_eq!(response, expected_value);
-        assert_eq!(*DeadKeys.state.value.get(), expected_value);
+
+        let stored = contract
+            .state
+            .scores
+            .get("game2")
+            .blocking_wait()
+            .expect("Failed to get score");
+        assert_eq!(stored.unwrap_or_default(), expected_value);
     }
 
-    fn create_and_instantiate_DeadKeys(initial_value: u64) -> DeadKeysContract {
+    fn create_and_instantiate_DeadKeys(_initial_value: u64) -> DeadKeysContract {
         let runtime = ContractRuntime::new().with_application_parameters(());
         let mut contract = DeadKeysContract {
             state: DeadKeysState::load(runtime.root_view_storage_context())
@@ -125,11 +147,11 @@ mod tests {
         };
 
         contract
-            .instantiate(initial_value)
+            .instantiate(_initial_value)
             .now_or_never()
             .expect("Initialization of DeadKeys state should not await anything");
 
-        assert_eq!(*contract.state.value.get(), initial_value);
+        // No initial value to assert for game scores
 
         contract
     }

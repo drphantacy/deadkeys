@@ -8,9 +8,10 @@ use async_graphql::{EmptySubscription, Object, Request, Response, Schema};
 use linera_sdk::{linera_base_types::WithServiceAbi, views::View, Service, ServiceRuntime};
 
 use self::state::DeadKeysState;
+use deadkeys::Operation;
 
 pub struct DeadKeysService {
-    state: DeadKeysState,
+    state: Arc<DeadKeysState>,
     runtime: Arc<ServiceRuntime<Self>>,
 }
 
@@ -24,23 +25,20 @@ impl Service for DeadKeysService {
     type Parameters = ();
 
     async fn new(runtime: ServiceRuntime<Self>) -> Self {
-        let state = DeadKeysState::load(runtime.root_view_storage_context())
+        let loaded_state = DeadKeysState::load(runtime.root_view_storage_context())
             .await
             .expect("Failed to load state");
+        let state = Arc::new(loaded_state);
         DeadKeysService {
-            state,
+            state: state.clone(),
             runtime: Arc::new(runtime),
         }
     }
 
     async fn handle_query(&self, request: Request) -> Response {
         let schema = Schema::build(
-            QueryRoot {
-                value: *self.state.value.get(),
-            },
-            MutationRoot {
-                runtime: self.runtime.clone(),
-            },
+            QueryRoot { state: self.state.clone() },
+            MutationRoot { runtime: self.runtime.clone() },
             EmptySubscription,
         )
         .finish();
@@ -54,20 +52,37 @@ struct MutationRoot {
 
 #[Object]
 impl MutationRoot {
-    async fn update_score(&self, value: u64) -> [u8; 0] {
-        self.runtime.schedule_operation(&value);
-        []
+    /// Schedule a per-game score update operation
+    #[graphql(name = "updateScore")]
+    async fn update_score(
+        &self,
+        #[graphql(name = "gameId")] game_id: String,
+        value: u64,
+    ) -> bool {
+        let op = Operation { game_id, value };
+        self.runtime.schedule_operation(&op);
+        true
     }
 }
 
 struct QueryRoot {
-    value: u64,
+    state: Arc<DeadKeysState>,
 }
 
 #[Object]
 impl QueryRoot {
-    async fn value(&self) -> &u64 {
-        &self.value
+    /// Retrieve the current score for a given game ID
+    #[graphql(name = "score")]
+    async fn score(
+        &self,
+        #[graphql(name = "gameId")] game_id: String,
+    ) -> u64 {
+        self.state
+            .scores
+            .get(&game_id)
+            .await
+            .unwrap_or_default()
+            .unwrap_or_default()
     }
 }
 
@@ -86,20 +101,24 @@ mod tests {
     fn query() {
         let value = 61_098_721_u64;
         let runtime = Arc::new(ServiceRuntime::<DeadKeysService>::new());
-        let mut state = DeadKeysState::load(runtime.root_view_storage_context())
+        let mut loaded = DeadKeysState::load(runtime.root_view_storage_context())
             .blocking_wait()
             .expect("Failed to read from mock key value store");
-        state.value.set(value);
+        // Insert a test score for game123
+        loaded
+            .scores
+            .insert("game123", value)
+            .expect("Failed to set score");
 
-        let service = DeadKeysService { state, runtime };
-        let request = Request::new("{ value }");
+        let service = DeadKeysService { state: Arc::new(loaded), runtime };
+        let request = Request::new(r#"query { score(gameId:"game123") }"#);
 
         let response = service
             .handle_query(request)
             .now_or_never()
             .expect("Query should not await anything");
 
-        let expected = Response::new(Value::from_json(json!({"value" : 61_098_721})).unwrap());
+        let expected = Response::new(Value::from_json(json!({"score" : 61_098_721})).unwrap());
 
         assert_eq!(response, expected)
     }
