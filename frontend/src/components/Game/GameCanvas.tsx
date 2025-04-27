@@ -86,17 +86,18 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZo
                     </div>
                 </div>
                 <div style={{ textAlign: 'center', flex: 1 }}>Time Left: {timeLeft}s</div>
-                <div style={{ display: 'flex', gap: '5px' }}>
+                <div style={{ display: 'flex', gap: '5px', marginTop: '10px', marginRight: '10px' }}>
                     {Array.from({ length: health }).map((_, index) => (
-                        <div
+                        <img
                             key={index}
+                            src="/images/heart.png"
+                            alt="Life"
                             style={{
-                                width: '20px',
-                                height: '20px',
-                                backgroundColor: 'red',
-                                clipPath: 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)',
+                                width: '32px',
+                                height: '32px',
+                                imageRendering: 'pixelated',
                             }}
-                        ></div>
+                        />
                     ))}
                 </div>
             </div>

@@ -26,6 +26,7 @@ const GameStateManager: React.FC = () => {
     const [gameId, setGameId] = useState<string>(() => globalThis.crypto.randomUUID());
     const [chainScore, setChainScore] = useState<number>(0);
     const [bestWpm, setBestWpm] = useState<number>(0);
+    const [isSplitting, setIsSplitting] = useState<boolean>(false);
     const { client, application, chainId, loading: lineraLoading, status, error: lineraError } = useLinera();
 
     useEffect(() => {
@@ -55,10 +56,14 @@ const GameStateManager: React.FC = () => {
     }, [lineraLoading, application, client, gameId]);
 
     const handleStart = () => {
-        // Begin game session with existing gameId
-        setScore(0);
-        setChainScore(0);
-        setGameState('playing');
+        setIsSplitting(true);
+        setTimeout(() => {
+            setIsSplitting(false);
+            setGameState('playing');
+            setScore(0);
+            setChainScore(0);
+            setBestWpm(0);
+        }, 2000);
     };
 
     const handleGameOver = async () => {
@@ -165,10 +170,10 @@ const GameStateManager: React.FC = () => {
             {/* Overlay onboarding panel (no extra dim layer) */}
             {showOnboardingOverlay && (
                 <div style={{
-                    position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-                    width: '700px', height: '467px',
+                    position: 'fixed', top: 0, left: 0,
+                    width: '100vw', height: '100vh',
                     backgroundImage: 'linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url("/images/startscreen.png")',
-                    backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
+                    backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
                     zIndex: 1002, pointerEvents: 'auto',
                     display: 'flex', justifyContent: 'center', alignItems: 'center'
                 }}>
@@ -189,17 +194,13 @@ const GameStateManager: React.FC = () => {
             {(() => {
                 const screens: Record<typeof gameState, React.ReactNode> = {
                     start: (
-                        <div style={{
-                            position: 'absolute', top: 0, left: 0,
-                            width: '100%', height: '100%',
-                            backgroundColor: 'rgba(0,0,0,0.7)',
-                            zIndex: 1000
-                        }}>
+                        <>
+                          {!isSplitting && (
                             <div style={{
-                                position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-                                width: '700px', height: '467px',
+                                position: 'fixed', top: 0, left: 0,
+                                width: '100vw', height: '100vh',
                                 backgroundImage: 'linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url("/images/startscreen.png")',
-                                backgroundSize: '100%', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
+                                backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
                                 zIndex: 1001,
                                 display: 'flex', justifyContent: 'center', alignItems: 'center'
                             }}>
@@ -210,49 +211,48 @@ const GameStateManager: React.FC = () => {
                                     disabled={!chainId || lineraLoading}
                                 />
                             </div>
-                            <div style={{
-                                position: 'absolute', bottom: 10, left: 0, right: 0,
-                                display: 'flex', justifyContent: 'center', gap: '10px', zIndex: 1001
-                            }}>
-                                <button onClick={async () => {
-                                    if (!application || !gameId) return;
-                                    try {
-                                        console.log('Sending updateScore', { gameId, value: 1 });
-                                        const resp = await application.query(
-                                            JSON.stringify({ query: `mutation { updateScore(gameId:"${gameId}", value:1) }` })
-                                        );
-                                        console.log('updateScore mutation response:', resp);
-                                        const result = JSON.parse(resp).data.updateScore;
-                                        console.log('updateScore result:', result);
-                                    } catch (err) {
-                                        console.error('mutation error', err);
-                                    }
-                                }}>Test Update Score</button>
-                                <button style={{ marginLeft: '10px' }} onClick={async () => {
-                                    if (!application || !gameId) return;
-                                    try {
-                                        console.log('Sending fetchScore', { gameId });
-                                        const resp = await application.query(
-                                            JSON.stringify({ query: `query { score(gameId:"${gameId}" ) }` })
-                                        );
-                                        console.log('fetchScore response:', resp);
-                                        const { data } = JSON.parse(resp);
-                                        console.log('fetchScore result:', data.score);
-                                        setChainScore(data.score);
-                                    } catch (err) {
-                                        console.error('fetch score error', err);
-                                        setDebugError(err instanceof Error ? err.message : String(err));
-                                    }
-                                }}>Fetch Score</button>
-                                <span>Chain Score: {chainScore}</span>
-                                <span>Test Score: {debugScore}</span>
-                                {debugError && (
-                                    <div style={{ color: 'red', fontSize: '12px', marginTop: '4px' }}>
-                                        Error fetching score: {debugError}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                          )}
+                          {isSplitting && (
+                            <>
+                              <style>{`
+                                @keyframes openLeft { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+                                @keyframes openRight { from { transform: translateX(0); } to { transform: translateX(100%); } }
+                              `}</style>
+                              <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', overflow: 'hidden', zIndex: 1002 }}>
+                                <div style={{
+                                    position: 'absolute', top: 0, left: 0,
+                                    width: '100vw', height: '100vh',
+                                    backgroundImage: 'linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url("/images/startscreen.png")',
+                                    backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
+                                    clipPath: 'inset(0 50% 0 0)',
+                                    animation: 'openLeft 2s forwards'
+                                }}>
+                                  <StartScreen
+                                      onStart={handleStart}
+                                      onHowTo={handleHowTo}
+                                      onViewLeaderboard={handleViewLeaderboard}
+                                      disabled={!chainId || lineraLoading}
+                                  />
+                                </div>
+                                <div style={{
+                                    position: 'absolute', top: 0, left: 0,
+                                    width: '100vw', height: '100vh',
+                                    backgroundImage: 'linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url("/images/startscreen.png")',
+                                    backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
+                                    clipPath: 'inset(0 0 0 50%)',
+                                    animation: 'openRight 2s forwards'
+                                }}>
+                                  <StartScreen
+                                      onStart={handleStart}
+                                      onHowTo={handleHowTo}
+                                      onViewLeaderboard={handleViewLeaderboard}
+                                      disabled={!chainId || lineraLoading}
+                                  />
+                                </div>
+                              </div>
+                            </>
+                          )}
+                        </>
                     ),
                     playing: (
                         <GameCanvas

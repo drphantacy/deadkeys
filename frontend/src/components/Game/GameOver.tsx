@@ -48,7 +48,7 @@ const GameOver: React.FC<GameOverProps> = ({ score, wpm, onRestart }) => {
             marginTop: '20px',
           }}
         >
-          Restart
+          Try Again
         </button>
       </div>
     </>
