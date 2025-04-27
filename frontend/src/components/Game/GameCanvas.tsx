@@ -14,7 +14,7 @@ interface GameCanvasProps {
 
 const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZombieReachBottom, onWpmUpdate }) => {
     const [playerInput, setPlayerInput] = useState('');
-    const [health, setHealth] = useState(3);
+    const [health, setHealth] = useState(100);
     const [score, setScore] = useState(0); // Score state
     // Track best WPM for kills
     const [bestWpm, setBestWpm] = useState(0);
@@ -62,7 +62,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZo
 
     const restartGame = () => {
         setPlayerInput(''); // Reset player input
-        setHealth(3); // Reset health
+        setHealth(100); // Reset health to 100 for testing
         setScore(0); // Reset score
         setBestWpm(0); // Reset best WPM
         resetUsedWords(); // Reset used words
@@ -111,14 +111,34 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZo
                     height: '100%',
                     overflow: 'hidden',
                     backgroundImage: 'url("/images/background.png")',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
+                    backgroundRepeat: 'repeat',
+                    backgroundSize: 'auto',
+                    backgroundPosition: 'top left',
                 }}
             >
                 {zombies.map((zombie) => (
-                    <Zombie key={zombie.id} zombie={zombie} />
+                    <Zombie
+                        key={zombie.id}
+                        zombie={zombie}
+                        isAttacked={playerInput.length > 0 && zombie.word.startsWith(playerInput)}
+                    />
                 ))}
             </div>
+            {/* Canon at bottom center */}
+            <img
+                src="/images/canons.png"
+                alt="Canon"
+                style={{
+                    position: 'fixed',
+                    left: 0,
+                    bottom: 0,
+                    width: '100%',
+                    height: 'auto',
+                    zIndex: 100,
+                    pointerEvents: 'none',
+                    imageRendering: 'pixelated',
+                }}
+            />
             <input
                 ref={inputRef}
                 type="text"
@@ -143,7 +163,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZo
                     textAlign: 'center',
                     imageRendering: 'pixelated',
                     outline: 'none',
-                    zIndex: 2,
+                    zIndex: 102,
                 }}
             />
         </div>

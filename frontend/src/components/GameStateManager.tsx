@@ -209,6 +209,14 @@ const GameStateManager: React.FC = () => {
                                     onHowTo={handleHowTo}
                                     onViewLeaderboard={handleViewLeaderboard}
                                     disabled={!chainId || lineraLoading}
+                                    statusText={
+                                        lineraLoading ? 'Connecting...'
+                                        : status === 'CreatingWallet' ? 'Creating Wallet...'
+                                        : status === 'RequestingChain' ? 'Requesting Chain...'
+                                        : status === 'Ready' ? 'Start Game'
+                                        : 'Start Game'
+                                    }
+                                    chainId={chainId}
                                 />
                             </div>
                           )}

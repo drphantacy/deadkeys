@@ -9,6 +9,44 @@ const useZombies = (
     restartSignal: boolean // Add restartSignal as a dependency
 ) => {
     const [zombies, setZombies] = useState<Zombie[]>([]);
+    // Helper to spawn a zombie immediately
+    const spawnZombie = () => {
+        const newWord = generateUniqueWord();
+        if (newWord) {
+            const now = Date.now();
+            const DISPLAY_WIDTH = Math.round(128/3);
+            const PADDING = 60;
+            let left, valid, tries = 0;
+            setZombies((prev) => {
+                do {
+                    left = 10 + Math.random() * 80;
+                    valid = true;
+                    for (const z of prev) {
+                        const dx = Math.abs(z.left - left);
+                        if (dx * window.innerWidth / 100 < DISPLAY_WIDTH + PADDING) {
+                            valid = false;
+                            break;
+                        }
+                    }
+                    tries++;
+                } while (!valid && tries < 30);
+                if (valid) {
+                    return [
+                        ...prev,
+                        {
+                            id: now,
+                            word: newWord,
+                            position: 0,
+                            left,
+                            health: 100,
+                            spawnTime: now,
+                        },
+                    ];
+                }
+                return prev;
+            });
+        }
+    };
 
     useEffect(() => {
         // Reset zombies, used words, and spawn interval on restart
@@ -16,21 +54,7 @@ const useZombies = (
         resetUsedWords();
 
         const spawnIntervalId = setInterval(() => {
-            const newWord = generateUniqueWord();
-            if (newWord) {
-                const now = Date.now();
-                setZombies((prev) => [
-                    ...prev,
-                    {
-                        id: now,
-                        word: newWord,
-                        position: 0,
-                        left: Math.random() * 90,
-                        health: 100,
-                        spawnTime: now,
-                    },
-                ]);
-            }
+            spawnZombie();
         }, 2000); // Fixed spawn interval of 2 seconds
 
         return () => clearInterval(spawnIntervalId); // Cleanup interval on unmount or restart
@@ -40,7 +64,7 @@ const useZombies = (
         const moveInterval = setInterval(() => {
             setZombies((prev) =>
                 prev
-                    .map((z) => ({ ...z, position: z.position + 2 })) // Move zombies down
+                    .map((z) => ({ ...z, position: z.position + 1 })) // Move zombies down slower
                     .filter((z) => {
                         const threshold = window.innerHeight - 100;
                         if (z.position >= threshold) {
