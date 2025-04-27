@@ -1,8 +1,21 @@
-export interface Zombie {
+interface EnemyBase {
     id: number;
     word: string;
-    position: number; // Vertical position of the zombie
-    left: number; // Horizontal position of the zombie
+    position: number;
+    left: number;
     health: number;
-    spawnTime: number; // Timestamp when the zombie was spawned
+    spawnTime: number;
 }
+
+export interface Zombie extends EnemyBase {
+    type: 'zombie';
+    speed: number; // pixels per tick or similar
+}
+
+export interface Mummy extends EnemyBase {
+    type: 'mummy';
+    speed: number;
+}
+
+export type Enemy = Zombie | Mummy;
+

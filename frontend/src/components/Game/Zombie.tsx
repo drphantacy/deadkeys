@@ -1,15 +1,8 @@
 import React, { useEffect, useState } from 'react';
-
-interface Zombie {
-    id: number;
-    word: string;
-    position: number; // Vertical position of the zombie
-    left: number; // Horizontal position of the zombie
-    health: number;
-}
+import { Enemy } from './types';
 
 interface ZombieProps {
-    zombie: Zombie;
+    zombie: Enemy;
     isAttacked: boolean;
 }
 
@@ -90,26 +83,47 @@ const Zombie: React.FC<ZombieProps> = ({ zombie, isAttacked }) => {
                     height: DISPLAY_HEIGHT,
                     position: 'relative',
                     marginBottom: 2,
-                    overflow: 'visible',
+                    overflow: zombie.type === 'mummy' ? 'hidden' : 'visible',
                 }}
             >
-                <div
-                    style={{
-                        width: ZOMBIE_WIDTH,
-                        height: ZOMBIE_HEIGHT,
-                        backgroundImage: 'url(/images/zombie.png)',
-                        backgroundPosition: `${bgX}px ${bgY}px`,
-                        backgroundSize: `${SPRITE_WIDTH}px ${SPRITE_HEIGHT}px`,
-                        imageRendering: 'pixelated',
-                        transform: 'scale(0.15)',
-                        position: 'absolute',
-                        left: '50%',
-                        top: 0,
-                        transformOrigin: 'top center',
-                        translate: '-50%',
-                        pointerEvents: 'none',
-                    }}
-                />
+                {zombie.type === 'zombie' && (
+                    <div
+                        style={{
+                            width: ZOMBIE_WIDTH,
+                            height: ZOMBIE_HEIGHT,
+                            backgroundImage: 'url(/images/zombie.png)',
+                            backgroundPosition: `${bgX}px ${bgY}px`,
+                            backgroundSize: `${SPRITE_WIDTH}px ${SPRITE_HEIGHT}px`,
+                            imageRendering: 'pixelated',
+                            transform: 'scale(0.15, 0.15)',
+                            position: 'absolute',
+                            left: '50%',
+                            top: 0,
+                            transformOrigin: 'top center',
+                            translate: '-50%',
+                            pointerEvents: 'none',
+                        }}
+                    />
+                )}
+                {zombie.type === 'mummy' && (
+                    <div
+                        style={{
+                            width: ZOMBIE_WIDTH,
+                            height: ZOMBIE_HEIGHT,
+                            backgroundImage: 'url(/images/mummy.png)',
+                            backgroundPosition: `${bgX}px ${bgY}px`,
+                            backgroundSize: `${SPRITE_WIDTH}px ${SPRITE_HEIGHT}px`,
+                            imageRendering: 'pixelated',
+                            transform: 'scale(0.15, 0.10)',
+                            position: 'absolute',
+                            left: '50%',
+                            top: 0,
+                            transformOrigin: 'top center',
+                            translate: '-50%',
+                            pointerEvents: 'none',
+                        }}
+                    />
+                )}
             </div>
             {/* Word label further below feet */}
             {(() => {

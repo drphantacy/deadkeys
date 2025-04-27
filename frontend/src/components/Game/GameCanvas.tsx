@@ -14,7 +14,7 @@ interface GameCanvasProps {
 
 const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZombieReachBottom, onWpmUpdate }) => {
     const [playerInput, setPlayerInput] = useState('');
-    const [health, setHealth] = useState(100);
+    const [health, setHealth] = useState(3);
     const [score, setScore] = useState(0); // Score state
     // Track best WPM for kills
     const [bestWpm, setBestWpm] = useState(0);
@@ -62,7 +62,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZo
 
     const restartGame = () => {
         setPlayerInput(''); // Reset player input
-        setHealth(100); // Reset health to 100 for testing
+        setHealth(3); // Reset health to 3
         setScore(0); // Reset score
         setBestWpm(0); // Reset best WPM
         resetUsedWords(); // Reset used words

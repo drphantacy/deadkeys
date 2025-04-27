@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { generateUniqueWord, resetUsedWords } from '../utils/wordUtils';
-import { Zombie } from '../types'; // Import Zombie type
+import { Enemy } from '../types'; // Import Enemy type
 
 const useZombies = (
     onGameOver: () => void,
@@ -8,7 +8,8 @@ const useZombies = (
     setHealth: React.Dispatch<React.SetStateAction<number>>,
     restartSignal: boolean // Add restartSignal as a dependency
 ) => {
-    const [zombies, setZombies] = useState<Zombie[]>([]);
+    const [zombies, setZombies] = useState<Enemy[]>([]);
+    const zombieKillCountRef = React.useRef(0);
     // Helper to spawn a zombie immediately
     const spawnZombie = () => {
         const newWord = generateUniqueWord();
@@ -33,14 +34,45 @@ const useZombies = (
                 if (valid) {
                     return [
                         ...prev,
-                        {
-                            id: now,
-                            word: newWord,
-                            position: 0,
-                            left,
-                            health: 100,
-                            spawnTime: now,
-                        },
+                        (() => {
+                            // Only spawn mummies after 5 zombie kills
+                            if (zombieKillCountRef.current < 5) {
+                                return {
+                                    id: now,
+                                    word: newWord,
+                                    position: 0,
+                                    left,
+                                    health: 100,
+                                    spawnTime: now,
+                                    type: 'zombie',
+                                    speed: 1, // slow
+                                };
+                            } else {
+                                if (Math.random() < 0.5) {
+                                    return {
+                                        id: now,
+                                        word: newWord,
+                                        position: 0,
+                                        left,
+                                        health: 100,
+                                        spawnTime: now,
+                                        type: 'zombie',
+                                        speed: 1, // slow
+                                    };
+                                } else {
+                                    return {
+                                        id: now,
+                                        word: newWord,
+                                        position: 0,
+                                        left,
+                                        health: 100,
+                                        spawnTime: now,
+                                        type: 'mummy',
+                                        speed: 2, // fast
+                                    };
+                                }
+                            }
+                        })(),
                     ];
                 }
                 return prev;
@@ -52,6 +84,7 @@ const useZombies = (
         // Reset zombies, used words, and spawn interval on restart
         setZombies([]);
         resetUsedWords();
+        zombieKillCountRef.current = 0;
 
         const spawnIntervalId = setInterval(() => {
             spawnZombie();
@@ -64,7 +97,7 @@ const useZombies = (
         const moveInterval = setInterval(() => {
             setZombies((prev) =>
                 prev
-                    .map((z) => ({ ...z, position: z.position + 1 })) // Move zombies down slower
+                    .map((z) => ({ ...z, position: z.position + z.speed })) // Move each enemy by its speed
                     .filter((z) => {
                         const threshold = window.innerHeight - 100;
                         if (z.position >= threshold) {
@@ -112,6 +145,10 @@ const useZombies = (
                 const points = basePoints + wpm;
                 // Remove zombie
                 setZombies((prev) => prev.filter((z) => z.id !== matchingZombie.id));
+                // Track zombie kills for mummy unlock
+                if (matchingZombie.type === 'zombie') {
+                    zombieKillCountRef.current += 1;
+                }
                 // Log zombie kill and defer score update to avoid setState-in-render
                 console.log('zombie kill', { id: matchingZombie.id, word: matchingZombie.word, points });
                 setTimeout(() => onScoreUpdate(points), 0);
