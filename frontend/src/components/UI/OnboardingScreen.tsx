@@ -97,8 +97,6 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onStart, disabled }
         </div>
         <div style={{ fontSize: '48px' }}>🧟‍♂️</div>
         <div style={{
-          position: 'relative',
-          top: '-12px',
           fontFamily: 'monospace',
           fontSize: '16px',
           backgroundColor: '#000',
@@ -146,11 +144,6 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onStart, disabled }
         >
           Start Playing
         </button>
-      )}
-      {showNudge && !completed && (
-        <div style={{ marginTop: '15px', fontSize: '14px', opacity: 0.7 }}>
-          Start typing to begin!
-        </div>
       )}
     </div>
   );

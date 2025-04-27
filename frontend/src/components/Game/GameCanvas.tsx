@@ -73,7 +73,8 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZo
     return (
         <div>
             <audio ref={gunSoundRef} src="/sounds/gunshot.mp3" preload="auto"></audio>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <style>{`@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');`}</style>
+            <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                     <div>Score: {score}</div>
                     <div style={{ fontSize: '14px', opacity: 0.7 }}>
@@ -95,17 +96,50 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZo
                     ))}
                 </div>
             </div>
-            <div style={{ position: 'relative', height: '400px', border: '1px solid black', overflow: 'hidden' }}>
+            <div
+                style={{
+                    position: 'absolute',
+                    zIndex: 1,
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    overflow: 'hidden',
+                    backgroundImage: 'url("/images/background.png")',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                }}
+            >
                 {zombies.map((zombie) => (
                     <Zombie key={zombie.id} zombie={zombie} />
                 ))}
             </div>
             <input
-                ref={inputRef} // Attach the ref to the input box
+                ref={inputRef}
                 type="text"
                 value={playerInput}
                 onChange={handleInputChange}
                 placeholder="Type here..."
+                style={{
+                    position: 'absolute',
+                    bottom: '40px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: '60vw',
+                    maxWidth: '600px',
+                    fontFamily: '"Press Start 2P", monospace',
+                    fontSize: '24px',
+                    padding: '12px',
+                    background: 'rgba(0,0,0,0.6)',
+                    borderWidth: '6px',
+                    borderStyle: 'solid',
+                    borderColor: 'yellow #FFD600 #FFEA00 #FFFF00',
+                    color: 'yellow',
+                    textAlign: 'center',
+                    imageRendering: 'pixelated',
+                    outline: 'none',
+                    zIndex: 2,
+                }}
             />
         </div>
     );

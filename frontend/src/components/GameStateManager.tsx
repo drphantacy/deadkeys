@@ -8,9 +8,14 @@ import OnboardingScreen from './UI/OnboardingScreen';
 import { useLeaderboard } from '../hooks/useLeaderboard';
 
 const GameStateManager: React.FC = () => {
-    const [gameState, setGameState] = useState<'onboarding' | 'start' | 'playing' | 'gameOver' | 'leaderboard'>(() =>
-        localStorage.getItem('seenOnboarding') ? 'start' : 'onboarding'
+    // Always start at the start-screen first
+    const [gameState, setGameState] = useState<'start' | 'playing' | 'gameOver' | 'leaderboard'>('start');
+
+    // Overlay flag for onboarding tutorial
+    const [showOnboardingOverlay, setShowOnboardingOverlay] = useState(
+        !Boolean(localStorage.getItem('seenOnboarding'))
     );
+
     const [score, setScore] = useState(0);
     const [leaderboard, setLeaderboard] = useLeaderboard();
     const [screenEffect, setScreenEffect] = useState(false); // Track screen flash and shake effect
@@ -84,28 +89,44 @@ const GameStateManager: React.FC = () => {
     // Onboarding flow handlers
     const handleOnboardingStart = () => {
         localStorage.setItem('seenOnboarding', 'true');
-        // Immediately start the game without extra click
+        setShowOnboardingOverlay(false);
         handleStart();
     };
+
     const handleHowTo = () => {
-        setGameState('onboarding');
+        setShowOnboardingOverlay(true);
     };
 
     // DEBUG: reset onboarding state
     const handleResetOnboarding = () => {
         localStorage.removeItem('seenOnboarding');
-        setGameState('onboarding');
+        setShowOnboardingOverlay(true);
     };
 
     return (
         <div
             style={{
-                position: 'relative',
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100vw',
+                height: '100vh',
                 overflow: 'hidden',
                 animation: screenEffect ? 'shake 0.2s' : 'none',
-                backgroundColor: screenEffect ? 'rgba(255, 0, 0, 0.5)' : 'transparent',
+                backgroundImage: `url("/images/background.png")`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
             }}
         >
+            {screenEffect && (
+                <div style={{
+                    position: 'absolute', top: 0, left: 0,
+                    width: '100%', height: '100%',
+                    backgroundColor: 'rgba(255, 0, 0, 0.5)',
+                    pointerEvents: 'none',
+                    zIndex: 3000
+                }}/>
+            )}
             <div style={{ position: 'absolute', top: 10, left: 10 }}>
                 <div style={{ fontSize: '14px' }}>Chain ID: {chainId || 'Loading...'}</div>
                 <div style={{ fontSize: '12px', color: lineraError ? 'red' : status === 'Ready' ? 'green' : 'orange' }}>
@@ -134,23 +155,63 @@ const GameStateManager: React.FC = () => {
                     fontSize: '12px',
                     padding: '4px 8px',
                     cursor: 'pointer',
+                    zIndex: 2000,  // ensure it's above overlays
                 }}
             >
                 Reset Onboarding
             </button>
+            {/* Overlay onboarding panel (no extra dim layer) */}
+            {showOnboardingOverlay && (
+                <div style={{
+                    position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                    width: '700px', height: '467px',
+                    backgroundImage: 'linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url("/images/startscreen.png")',
+                    backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
+                    zIndex: 1002, pointerEvents: 'auto',
+                    display: 'flex', justifyContent: 'center', alignItems: 'center'
+                }}>
+                    <button onClick={() => {
+                        localStorage.setItem('seenOnboarding', 'true');
+                        setShowOnboardingOverlay(false);
+                    }} style={{
+                        position: 'absolute', top: 16, right: 16,
+                        width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '16px', fontFamily: 'monospace', color: 'rgb(222, 42, 2)',
+                        border: '2px solid rgb(222, 42, 2)', borderRadius: '8px', background: 'transparent',
+                        padding: 0, lineHeight: 1, cursor: 'pointer', zIndex: 1003
+                    }}>X</button>
+                    <OnboardingScreen onStart={handleOnboardingStart} disabled={!chainId || lineraLoading} />
+                </div>
+            )}
             {/* Render current screen via lookup */}
             {(() => {
                 const screens: Record<typeof gameState, React.ReactNode> = {
-                    onboarding: <OnboardingScreen onStart={handleOnboardingStart} disabled={!chainId || lineraLoading} />, // Onboarding
                     start: (
-                        <div>
-                            <StartScreen
-                                onStart={handleStart}
-                                onHowTo={handleHowTo}
-                                onViewLeaderboard={handleViewLeaderboard}
-                                disabled={!chainId || lineraLoading}
-                            />
-                            <div style={{ marginTop: '10px' }}>
+                        <div style={{
+                            position: 'absolute', top: 0, left: 0,
+                            width: '100%', height: '100%',
+                            backgroundColor: 'rgba(0,0,0,0.7)',
+                            zIndex: 1000
+                        }}>
+                            <div style={{
+                                position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                                width: '700px', height: '467px',
+                                backgroundImage: 'linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url("/images/startscreen.png")',
+                                backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
+                                zIndex: 1001,
+                                display: 'flex', justifyContent: 'center', alignItems: 'center'
+                            }}>
+                                <StartScreen
+                                    onStart={handleStart}
+                                    onHowTo={handleHowTo}
+                                    onViewLeaderboard={handleViewLeaderboard}
+                                    disabled={!chainId || lineraLoading}
+                                />
+                            </div>
+                            <div style={{
+                                position: 'absolute', bottom: 10, left: 0, right: 0,
+                                display: 'flex', justifyContent: 'center', gap: '10px', zIndex: 1001
+                            }}>
                                 <button onClick={async () => {
                                     if (!application || !gameId) return;
                                     try {
@@ -165,29 +226,24 @@ const GameStateManager: React.FC = () => {
                                         console.error('mutation error', err);
                                     }
                                 }}>Test Update Score</button>
-                                <button
-                                    style={{ marginLeft: '10px' }}
-                                    onClick={async () => {
-                                        if (!application || !gameId) return;
-                                        try {
-                                            console.log('Sending fetchScore', { gameId });
-                                            const resp = await application.query(
-                                                JSON.stringify({ query: `query { score(gameId:"${gameId}") }` })
-                                            );
-                                            console.log('fetchScore response:', resp);
-                                            const { data } = JSON.parse(resp);
-                                            console.log('fetchScore result:', data.score);
-                                            setChainScore(data.score);
-                                        } catch (err) {
-                                            console.error('fetch score error', err);
-                                            setDebugError(err instanceof Error ? err.message : String(err));
-                                        }
-                                    }}
-                                >
-                                    Fetch Score
-                                </button>
-                                <span style={{ marginLeft: '10px' }}>Chain Score: {chainScore}</span>
-                                <span style={{ marginLeft: '10px' }}>Test Score: {debugScore}</span>
+                                <button style={{ marginLeft: '10px' }} onClick={async () => {
+                                    if (!application || !gameId) return;
+                                    try {
+                                        console.log('Sending fetchScore', { gameId });
+                                        const resp = await application.query(
+                                            JSON.stringify({ query: `query { score(gameId:"${gameId}" ) }` })
+                                        );
+                                        console.log('fetchScore response:', resp);
+                                        const { data } = JSON.parse(resp);
+                                        console.log('fetchScore result:', data.score);
+                                        setChainScore(data.score);
+                                    } catch (err) {
+                                        console.error('fetch score error', err);
+                                        setDebugError(err instanceof Error ? err.message : String(err));
+                                    }
+                                }}>Fetch Score</button>
+                                <span>Chain Score: {chainScore}</span>
+                                <span>Test Score: {debugScore}</span>
                                 {debugError && (
                                     <div style={{ color: 'red', fontSize: '12px', marginTop: '4px' }}>
                                         Error fetching score: {debugError}
