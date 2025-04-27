@@ -25,6 +25,7 @@ const GameStateManager: React.FC = () => {
     // New state for per-game tracking
     const [gameId, setGameId] = useState<string>(() => globalThis.crypto.randomUUID());
     const [chainScore, setChainScore] = useState<number>(0);
+    const [bestWpm, setBestWpm] = useState<number>(0);
     const { client, application, chainId, loading: lineraLoading, status, error: lineraError } = useLinera();
 
     useEffect(() => {
@@ -71,6 +72,7 @@ const GameStateManager: React.FC = () => {
         setGameId(newGameId);
         setScore(0);
         setChainScore(0);
+        setBestWpm(0);
         setGameState('start');
     };
 
@@ -196,8 +198,8 @@ const GameStateManager: React.FC = () => {
                             <div style={{
                                 position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
                                 width: '700px', height: '467px',
-                                backgroundImage: 'linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url("/images/startscreen.png")',
-                                backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
+                                backgroundImage: 'linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url("/images/startscreen.png")',
+                                backgroundSize: '100%', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
                                 zIndex: 1001,
                                 display: 'flex', justifyContent: 'center', alignItems: 'center'
                             }}>
@@ -271,15 +273,11 @@ const GameStateManager: React.FC = () => {
                                 }
                             }}
                             onZombieReachBottom={triggerScreenEffect}
+                            onWpmUpdate={setBestWpm}
                         />
                     ),
                     gameOver: (
-                        <div>
-                            <GameOver score={chainScore} onRestart={handleRestart} />
-                            <button onClick={handleViewLeaderboard} style={{ marginTop: '10px' }}>
-                                View Leaderboard
-                            </button>
-                        </div>
+                        <GameOver score={chainScore} wpm={bestWpm} onRestart={handleRestart} />
                     ),
                     leaderboard: (
                         <div className="leaderboard-screen">

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import useTimer from './hooks/useTimer';
 import useZombies from './hooks/useZombies';
 import Zombie from './Zombie';
@@ -9,9 +9,10 @@ interface GameCanvasProps {
     onGameOver: () => void;
     onScoreUpdate: (points: number) => void;
     onZombieReachBottom: () => void; // Callback to trigger screen effect
+    onWpmUpdate?: (wpm: number) => void;
 }
 
-const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZombieReachBottom }) => {
+const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZombieReachBottom, onWpmUpdate }) => {
     const [playerInput, setPlayerInput] = useState('');
     const [health, setHealth] = useState(3);
     const [score, setScore] = useState(0); // Score state
@@ -46,7 +47,10 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZo
                 console.log('Local onScoreUpdate triggered with points:', points);
                 onScoreUpdate(points);
             },
-            (wpm: number) => setBestWpm((prev) => Math.max(prev, wpm))
+            (wpm: number) => {
+                setBestWpm((prev) => Math.max(prev, wpm));
+                if (onWpmUpdate) onWpmUpdate(wpm);
+            }
         );
 
         // Play gun sound

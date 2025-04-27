@@ -42,23 +42,22 @@ const useZombies = (
                 prev
                     .map((z) => ({ ...z, position: z.position + 2 })) // Move zombies down
                     .filter((z) => {
-                        if (z.position >= 400) {
-                            // Zombie reaches the bottom
+                        const threshold = window.innerHeight - 100;
+                        if (z.position >= threshold) {
+                            // Zombie reaches the top of input field
                             setHealth((prevHealth) => {
                                 const newHealth = prevHealth - 1;
                                 if (newHealth <= 0) {
-                                    // Defer game over to avoid state update during render
                                     setTimeout(onGameOver, 0);
                                     setZombies([]); // Clear zombies on game over
                                     resetUsedWords(); // Reset used words on game over
                                 }
                                 return newHealth;
                             });
-                            // Defer screen effect to avoid nested state update
                             setTimeout(onZombieReachBottom, 0);
-                            return false; // Remove zombie that reaches the bottom
+                            return false;
                         }
-                        return true; // Keep zombie if it hasn't reached the bottom
+                        return true;
                     })
             );
         }, 50); // Update every 50ms
