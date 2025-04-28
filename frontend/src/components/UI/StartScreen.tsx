@@ -33,6 +33,20 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, onHowTo, onViewLeade
     return (
         <>
             <style>{`@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');`}</style>
+            <style>{`
+                @keyframes glowPulse {
+                    0% { text-shadow: 0 0 5px rgba(222,42,2,0.5); }
+                    100% { text-shadow: 0 0 20px rgba(222,42,2,0.8); }
+                }
+                .start-btn {
+                    transition: color 0.5s ease-in-out, border-color 0.5s ease-in-out;
+                }
+                .start-btn:hover {
+                    color: rgb(222,42,2) !important;
+                    border-color: rgb(222,42,2) !important;
+                    animation: glowPulse 1s infinite alternate;
+                }
+            `}</style>
             <audio ref={mouseOverRef} src="/sounds/mouse-over.mp3" preload="auto" />
             <audio ref={welcomeAudioRef} src="/sounds/start.mp3" preload="auto" />
             <div className="start-screen" style={{ position: 'relative', fontFamily: '"Press Start 2P", monospace', textAlign: 'center' }}>
@@ -42,6 +56,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, onHowTo, onViewLeade
                     textShadow: '2px 4px 8px #000, 0 2px 0 #222' 
                 }}>DeadKeys</h1>
                 <button
+                    className="start-btn"
                     onClick={onStart}
                     disabled={disabled}
                     onMouseEnter={handleMouseEnter}

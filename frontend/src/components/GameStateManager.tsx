@@ -147,13 +147,6 @@ const GameStateManager: React.FC = () => {
                     zIndex: 3000
                 }}/>
             )}
-            <div style={{ position: 'absolute', top: 10, left: 10 }}>
-                <div style={{ fontSize: '14px' }}>Chain ID: {chainId || 'Loading...'}</div>
-                <div style={{ fontSize: '12px', color: lineraError ? 'red' : status === 'Ready' ? 'green' : 'orange' }}>
-                    Status: {status === 'Ready' ? 'Ready To Kill' : status}
-                </div>
-                {/* Chain Value removed as not needed */}
-            </div>
             <style>
                 {`
                 @keyframes shake {
@@ -310,6 +303,7 @@ const GameStateManager: React.FC = () => {
                             }}
                             onZombieReachBottom={triggerScreenEffect}
                             onWpmUpdate={setBestWpm}
+                            screenEffect={screenEffect}
                         />
                     ),
                     gameOver: (

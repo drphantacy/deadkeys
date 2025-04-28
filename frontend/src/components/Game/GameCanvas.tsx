@@ -10,19 +10,24 @@ interface GameCanvasProps {
     onScoreUpdate: (points: number) => void;
     onZombieReachBottom: () => void; // Callback to trigger screen effect
     onWpmUpdate?: (wpm: number) => void;
+    screenEffect: boolean;
 }
 
-const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZombieReachBottom, onWpmUpdate }) => {
+const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZombieReachBottom, onWpmUpdate, screenEffect }) => {
     const [playerInput, setPlayerInput] = useState('');
     const [health, setHealth] = useState(3);
     const [score, setScore] = useState(0); // Score state
+    const [flashScore, setFlashScore] = useState(false);
     // Track best WPM for kills
     const [bestWpm, setBestWpm] = useState(0);
+    const [flashWpm, setFlashWpm] = useState(false);
     const [restartSignal, setRestartSignal] = useState(false); // Add restart signal
     const gunSoundRef = useRef<HTMLAudioElement | null>(null);
     const inputRef = useRef<HTMLInputElement | null>(null); // Ref for the input box
 
     const { timeLeft } = useTimer(60, onGameOver); // Use timeLeft from the hook
+    // Dynamic timer color based on remaining time
+    const timerColor = timeLeft > 40 ? 'lime' : timeLeft > 15 ? 'yellow' : 'red';
     const { zombies, handleZombieHit } = useZombies(onGameOver, onZombieReachBottom, setHealth, restartSignal); // Use zombies from the hook
 
     useEffect(() => {
@@ -35,6 +40,24 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZo
             inputRef.current.focus();
         }
     }, [restartSignal]); // Triggered when restartSignal changes
+
+    // Flash score when updated
+    useEffect(() => {
+        if (score > 0) {
+            setFlashScore(true);
+            const t = setTimeout(() => setFlashScore(false), 300);
+            return () => clearTimeout(t);
+        }
+    }, [score]);
+
+    // Flash WPM on new high
+    useEffect(() => {
+        if (bestWpm > 0) {
+            setFlashWpm(true);
+            const t = setTimeout(() => setFlashWpm(false), 300);
+            return () => clearTimeout(t);
+        }
+    }, [bestWpm]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const input = e.target.value;
@@ -75,26 +98,62 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZo
     };
 
     return (
-        <div>
+        <div style={{  animation: screenEffect ? 'shake 0.2s' : 'none' }}>
+            {screenEffect && (
+                <div style={{
+                    position: 'absolute', top: 0, left: 0,
+                    width: '100%', height: '100%',
+                    backgroundColor: 'rgba(255, 0, 0, 0.5)',
+                    pointerEvents: 'none',
+                    zIndex: 9999,
+                }}/>
+            )}
             <audio ref={gunSoundRef} src="/sounds/gunshot.mp3" preload="auto"></audio>
             <style>{`@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');`}</style>
-            <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                    <div>Score: {score}</div>
-                    <div style={{ fontSize: '14px', opacity: 0.7 }}>
+            <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '15px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: '0 10px', gap: '10px' }}>
+                    <div style={{
+                        fontFamily: '"Press Start 2P", monospace',
+                        fontSize: '18px',
+                        color: flashScore ? 'lime' : 'yellow',
+                        textShadow: '2px 4px 8px #000, 0 2px 0 #222',
+                        transition: 'color 0.3s',
+                    }}>
+                        Score: {score}
+                    </div>
+                    <div style={{
+                        fontFamily: '"Press Start 2P", monospace',
+                        fontSize: '14px',
+                        color: flashWpm ? 'lime' : 'yellow',
+                        textShadow: '2px 4px 8px #000, 0 2px 0 #222',
+                        transition: 'color 0.3s',
+                        opacity: 0.7,
+                    }}>
                         Typing Speed: {bestWpm} WPM
                     </div>
                 </div>
-                <div style={{ textAlign: 'center', flex: 1 }}>Time Left: {timeLeft}s</div>
-                <div style={{ display: 'flex', gap: '5px', marginTop: '10px', marginRight: '10px' }}>
+                <div style={{
+                    position: 'absolute',
+                    top: '10px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    textAlign: 'center',
+                    fontFamily: '"Press Start 2P", monospace',
+                    fontSize: '34px',
+                    color: timerColor,
+                    textShadow: '2px 4px 8px #000, 0 2px 0 #222',
+                }}>
+                    {timeLeft}s
+                </div>
+                <div style={{ display: 'flex', gap: '5px', marginTop: '-15px', marginRight: '10px' }}>
                     {Array.from({ length: health }).map((_, index) => (
                         <img
                             key={index}
                             src="/images/heart.png"
                             alt="Life"
                             style={{
-                                width: '32px',
-                                height: '32px',
+                                width: '40px',
+                                height: '40px',
                                 imageRendering: 'pixelated',
                             }}
                         />
