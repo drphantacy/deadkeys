@@ -22,7 +22,7 @@ const Zombie: React.FC<ZombieProps> = ({ zombie, isAttacked }) => {
     useEffect(() => {
         const interval = setInterval(() => {
             setFrame((prev) => (prev + 1) % FRAME_COUNT);
-        }, 120); // ~8fps
+        }, 250); // 4fps
         return () => clearInterval(interval);
     }, []);
 
