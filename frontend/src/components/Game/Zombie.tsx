@@ -57,7 +57,8 @@ const Zombie: React.FC<ZombieProps> = ({ zombie, isAttacked }) => {
         {isAttacked && (
             <div
                 style={{
-                    position: 'relative',
+                    position: 'absolute',
+                    top: -14,
                     width: DISPLAY_WIDTH,
                     height: 8,
                     background: '#444',
@@ -83,7 +84,7 @@ const Zombie: React.FC<ZombieProps> = ({ zombie, isAttacked }) => {
                     height: DISPLAY_HEIGHT,
                     position: 'relative',
                     marginBottom: 2,
-                    overflow: zombie.type === 'mummy' ? 'hidden' : 'visible',
+                    overflow: 'visible',
                 }}
             >
                 {zombie.type === 'zombie' && (
@@ -114,10 +115,10 @@ const Zombie: React.FC<ZombieProps> = ({ zombie, isAttacked }) => {
                             backgroundPosition: `${bgX}px ${bgY}px`,
                             backgroundSize: `${SPRITE_WIDTH}px ${SPRITE_HEIGHT}px`,
                             imageRendering: 'pixelated',
-                            transform: 'scale(0.15, 0.10)',
+                            transform: 'scale(0.16, 0.16)',
                             position: 'absolute',
                             left: '50%',
-                            top: 0,
+                            top: -10,
                             transformOrigin: 'top center',
                             translate: '-50%',
                             pointerEvents: 'none',
