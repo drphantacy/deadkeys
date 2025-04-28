@@ -99,7 +99,7 @@ const Zombie: React.FC<ZombieProps> = ({ zombie, isAttacked }) => {
                             transform: 'scale(0.15, 0.15)',
                             position: 'absolute',
                             left: '50%',
-                            top: 0,
+                            top: -8,
                             transformOrigin: 'top center',
                             translate: '-50%',
                             pointerEvents: 'none',

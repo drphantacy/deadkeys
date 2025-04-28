@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLinera } from '../linera/LineraProvider';
 import GameCanvas from './Game/GameCanvas';
+import SoundManager from './Game/SoundManager';
 import Leaderboard from './Leaderboard/Leaderboard';
 import GameOver from './Game/GameOver';
 import StartScreen from './UI/StartScreen';
@@ -110,8 +111,20 @@ const GameStateManager: React.FC = () => {
         setShowOnboardingOverlay(true);
     };
 
+    // Compute display text for StartScreen status
+    const statusMap: Record<string, string> = {
+        CreatingWallet: 'Creating Wallet...',
+        RequestingChain: 'Requesting Chain...',
+        Ready: 'Start Game',
+    };
+    const statusTextToDisplay = lineraLoading
+        ? 'Connecting...'
+        : statusMap[status] || 'Start Game';
+
     return (
-        <div
+        <>
+            <SoundManager gameState={gameState} />
+            <div
             style={{
                 position: 'fixed',
                 top: 0,
@@ -168,29 +181,30 @@ const GameStateManager: React.FC = () => {
                 Reset Onboarding
             </button>
             {/* Overlay onboarding panel (no extra dim layer) */}
-            {showOnboardingOverlay && (
-                <div style={{
-                    position: 'fixed', top: 0, left: 0,
+        </div>
+        {showOnboardingOverlay && (
+            <div style={{
+                position: 'fixed', top: 0, left: 0,
                     width: '100vw', height: '100vh',
                     backgroundImage: 'linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url("/images/startscreen.png")',
                     backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
                     zIndex: 1002, pointerEvents: 'auto',
                     display: 'flex', justifyContent: 'center', alignItems: 'center'
-                }}>
-                    <button onClick={() => {
-                        localStorage.setItem('seenOnboarding', 'true');
-                        setShowOnboardingOverlay(false);
-                    }} style={{
-                        position: 'absolute', top: 16, right: 16,
-                        width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '16px', fontFamily: 'monospace', color: 'rgb(222, 42, 2)',
-                        border: '2px solid rgb(222, 42, 2)', borderRadius: '8px', background: 'transparent',
-                        padding: 0, lineHeight: 1, cursor: 'pointer', zIndex: 1003
-                    }}>X</button>
-                    <OnboardingScreen onStart={handleOnboardingStart} disabled={!chainId || lineraLoading} />
-                </div>
-            )}
-            {/* Render current screen via lookup */}
+            }}>
+                <button onClick={() => {
+                    localStorage.setItem('seenOnboarding', 'true');
+                    setShowOnboardingOverlay(false);
+                }} style={{
+                    position: 'absolute', top: 16, right: 16,
+                    width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '16px', fontFamily: 'monospace', color: 'rgb(222, 42, 2)',
+                    border: '2px solid rgb(222, 42, 2)', borderRadius: '8px', background: 'transparent',
+                    padding: 0, lineHeight: 1, cursor: 'pointer', zIndex: 1003
+                }}>X</button>
+                <OnboardingScreen onStart={handleOnboardingStart} disabled={!chainId || lineraLoading} />
+            </div>
+        )}
+        {/* Render current screen via lookup */}
             {(() => {
                 const screens: Record<typeof gameState, React.ReactNode> = {
                     start: (
@@ -209,15 +223,29 @@ const GameStateManager: React.FC = () => {
                                     onHowTo={handleHowTo}
                                     onViewLeaderboard={handleViewLeaderboard}
                                     disabled={!chainId || lineraLoading}
-                                    statusText={
-                                        lineraLoading ? 'Connecting...'
-                                        : status === 'CreatingWallet' ? 'Creating Wallet...'
-                                        : status === 'RequestingChain' ? 'Requesting Chain...'
-                                        : status === 'Ready' ? 'Start Game'
-                                        : 'Start Game'
-                                    }
+                                    statusText={statusTextToDisplay}
                                     chainId={chainId}
                                 />
+                                {/* Linera branding on start screen */}
+                                <div style={{
+                                    position: 'absolute',
+                                    bottom: 10,
+                                    left: 10,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'flex-start',
+                                    color: 'white',
+                                    textAlign: 'left',
+                                }}>
+                                    <span style={{ fontSize: '12px' }}>
+                                        Fully On-Chain, Powered by:
+                                    </span>
+                                    <img
+                                        src="/images/Linera_Red_White_H.png"
+                                        alt="Linera Logo"
+                                        style={{ width: '100px', height: 'auto', marginTop: '4px' }}
+                                    />
+                                </div>
                             </div>
                           )}
                           {isSplitting && (
@@ -298,7 +326,7 @@ const GameStateManager: React.FC = () => {
                 };
                 return screens[gameState];
             })()}
-        </div>
+        </>
     );
 };
 

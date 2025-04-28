@@ -5,21 +5,36 @@ interface StartScreenProps {
     onHowTo: () => void;
     onViewLeaderboard: () => void;
     disabled?: boolean;
-}
-
-interface StartScreenProps {
-    onStart: () => void;
-    onHowTo: () => void;
-    onViewLeaderboard: () => void;
-    disabled?: boolean;
     statusText?: string;
     chainId?: string;
 }
 
 const StartScreen: React.FC<StartScreenProps> = ({ onStart, onHowTo, onViewLeaderboard, disabled, statusText, chainId }) => {
+    const mouseOverRef = React.useRef<HTMLAudioElement>(null);
+    const welcomeAudioRef = React.useRef<HTMLAudioElement>(null);
+
+    const handleMouseEnter = () => {
+        const audio = mouseOverRef.current;
+        if (audio) {
+            audio.currentTime = 0;
+            audio.play();
+        }
+    };
+    const handleMouseLeave = () => {
+        const audio = mouseOverRef.current;
+        if (audio) {
+            audio.pause();
+            audio.currentTime = 0;
+        }
+    };
+
+    const [showWelcome, setShowWelcome] = React.useState<boolean>(() => !localStorage.getItem('seenWelcome'));
+
     return (
         <>
             <style>{`@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');`}</style>
+            <audio ref={mouseOverRef} src="/sounds/mouse-over.mp3" preload="auto" />
+            <audio ref={welcomeAudioRef} src="/sounds/start.mp3" preload="auto" />
             <div className="start-screen" style={{ position: 'relative', fontFamily: '"Press Start 2P", monospace', textAlign: 'center' }}>
                 <h1 style={{ 
                     margin: '40px 0 64px 0', 
@@ -29,6 +44,8 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, onHowTo, onViewLeade
                 <button
                     onClick={onStart}
                     disabled={disabled}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
                     style={{
                         fontFamily: '"Press Start 2P", monospace',
                         fontSize: '20px',
@@ -79,6 +96,58 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, onHowTo, onViewLeade
                     )}
                 </div>
             </div>
+            {showWelcome && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+                    background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        width: '550px',
+                        height: '400px',
+                        backgroundImage: 'url("/images/gameover.png")',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundRepeat: 'no-repeat',
+                        padding: '20px',
+                        borderRadius: '8px',
+                        color: '#fff',
+                        textAlign: 'center',
+                        fontFamily: '"Press Start 2P", monospace',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        lineHeight: '1.5',
+                    }}>
+                        <h1 style={{ margin: '0 0 10px', fontSize: '24px', color: 'yellow' }}>DeadKeys</h1>
+                        <p style={{ margin: '0 0 8px', fontSize: '16px', lineHeight: '1.4' }}>
+                            The On-Chain Zombie Apocalypse Starts Now.
+                        </p>
+                        <p style={{ margin: '0 0 16px', fontSize: '16px', lineHeight: '1.4' }}>
+                            Are you ready?
+                        </p>
+                        <button
+                            onClick={() => {
+                                welcomeAudioRef.current?.play();
+                                localStorage.setItem('seenWelcome', 'true');
+                                setShowWelcome(false);
+                            }}
+                            onMouseEnter={handleMouseEnter}
+                            onMouseLeave={handleMouseLeave}
+                            disabled={false}
+                            style={{
+                                fontFamily: '"Press Start 2P", monospace', fontSize: '20px', color: 'yellow',
+                                background: 'transparent', border: '2px solid yellow', padding: '10px 20px',
+                                cursor: 'pointer',
+                                marginTop: '20px'
+                            }}
+                        >
+                            Let's Go
+                        </button>
+                    </div>
+                </div>
+            )}
         </>
     );
 };
