@@ -98,106 +98,116 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZo
     };
 
     return (
-        <div style={{  animation: screenEffect ? 'shake 0.2s' : 'none' }}>
-            {screenEffect && (
-                <div style={{
-                    position: 'absolute', top: 0, left: 0,
-                    width: '100%', height: '100%',
-                    backgroundColor: 'rgba(255, 0, 0, 0.5)',
-                    pointerEvents: 'none',
-                    zIndex: 9999,
-                }}/>
-            )}
-            <audio ref={gunSoundRef} src="/sounds/gunshot.mp3" preload="auto"></audio>
-            <style>{`@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');`}</style>
-            <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '15px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: '0 10px', gap: '10px' }}>
+        <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
+            <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                animation: screenEffect ? 'shake 0.2s' : 'none',
+                transformOrigin: 'top left',
+            }}>
+                {screenEffect && (
                     <div style={{
-                        fontFamily: '"Press Start 2P", monospace',
-                        fontSize: '18px',
-                        color: flashScore ? 'lime' : 'yellow',
-                        textShadow: '2px 4px 8px #000, 0 2px 0 #222',
-                        transition: 'color 0.3s',
-                    }}>
-                        Score: {score}
+                        position: 'absolute', top: 0, left: 0,
+                        width: '100%', height: '100%',
+                        backgroundColor: 'rgba(255, 0, 0, 0.2)',
+                        pointerEvents: 'none',
+                        zIndex: 9999,
+                    }}/>
+                )}
+                <audio ref={gunSoundRef} src="/sounds/gunshot.mp3" preload="auto"></audio>
+                <style>{`@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');`}</style>
+                <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '15px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: '0 10px', gap: '10px' }}>
+                        <div style={{
+                            fontFamily: '"Press Start 2P", monospace',
+                            fontSize: '18px',
+                            color: flashScore ? 'lime' : 'yellow',
+                            textShadow: '2px 4px 8px #000, 0 2px 0 #222',
+                            transition: 'color 0.3s',
+                        }}>
+                            Score: {score}
+                        </div>
+                        <div style={{
+                            fontFamily: '"Press Start 2P", monospace',
+                            fontSize: '14px',
+                            color: flashWpm ? 'lime' : 'yellow',
+                            textShadow: '2px 4px 8px #000, 0 2px 0 #222',
+                            transition: 'color 0.3s',
+                            opacity: 0.7,
+                        }}>
+                            Typing Speed: {bestWpm} WPM
+                        </div>
                     </div>
                     <div style={{
+                        position: 'absolute',
+                        top: '10px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        textAlign: 'center',
                         fontFamily: '"Press Start 2P", monospace',
-                        fontSize: '14px',
-                        color: flashWpm ? 'lime' : 'yellow',
+                        fontSize: '34px',
+                        color: timerColor,
                         textShadow: '2px 4px 8px #000, 0 2px 0 #222',
-                        transition: 'color 0.3s',
-                        opacity: 0.7,
                     }}>
-                        Typing Speed: {bestWpm} WPM
+                        {timeLeft}s
+                    </div>
+                    <div style={{ display: 'flex', gap: '5px', marginTop: '-15px', marginRight: '10px' }}>
+                        {Array.from({ length: health }).map((_, index) => (
+                            <img
+                                key={index}
+                                src="/images/heart.png"
+                                alt="Life"
+                                style={{
+                                    width: '40px',
+                                    height: '40px',
+                                    imageRendering: 'pixelated',
+                                }}
+                            />
+                        ))}
                     </div>
                 </div>
-                <div style={{
-                    position: 'absolute',
-                    top: '10px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    textAlign: 'center',
-                    fontFamily: '"Press Start 2P", monospace',
-                    fontSize: '34px',
-                    color: timerColor,
-                    textShadow: '2px 4px 8px #000, 0 2px 0 #222',
-                }}>
-                    {timeLeft}s
-                </div>
-                <div style={{ display: 'flex', gap: '5px', marginTop: '-15px', marginRight: '10px' }}>
-                    {Array.from({ length: health }).map((_, index) => (
-                        <img
-                            key={index}
-                            src="/images/heart.png"
-                            alt="Life"
-                            style={{
-                                width: '40px',
-                                height: '40px',
-                                imageRendering: 'pixelated',
-                            }}
+                <div
+                    style={{
+                        position: 'absolute',
+                        zIndex: 1,
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        overflow: 'hidden',
+                        backgroundImage: 'url("/images/background.png")',
+                        backgroundRepeat: 'repeat',
+                        backgroundSize: 'auto',
+                        backgroundPosition: 'top left',
+                    }}
+                >
+                    {zombies.map((zombie) => (
+                        <Zombie
+                            key={zombie.id}
+                            zombie={zombie}
+                            isAttacked={playerInput.length > 0 && zombie.word.startsWith(playerInput)}
                         />
                     ))}
                 </div>
+                {/* Canon at bottom center */}
+                <img
+                    src="/images/canons.png"
+                    alt="Canon"
+                    style={{
+                        position: 'fixed',
+                        left: 0,
+                        bottom: 0,
+                        width: '100%',
+                        height: 'auto',
+                        zIndex: 100,
+                        pointerEvents: 'none',
+                        imageRendering: 'pixelated',
+                    }}
+                />
             </div>
-            <div
-                style={{
-                    position: 'absolute',
-                    zIndex: 1,
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    overflow: 'hidden',
-                    backgroundImage: 'url("/images/background.png")',
-                    backgroundRepeat: 'repeat',
-                    backgroundSize: 'auto',
-                    backgroundPosition: 'top left',
-                }}
-            >
-                {zombies.map((zombie) => (
-                    <Zombie
-                        key={zombie.id}
-                        zombie={zombie}
-                        isAttacked={playerInput.length > 0 && zombie.word.startsWith(playerInput)}
-                    />
-                ))}
-            </div>
-            {/* Canon at bottom center */}
-            <img
-                src="/images/canons.png"
-                alt="Canon"
-                style={{
-                    position: 'fixed',
-                    left: 0,
-                    bottom: 0,
-                    width: '100%',
-                    height: 'auto',
-                    zIndex: 100,
-                    pointerEvents: 'none',
-                    imageRendering: 'pixelated',
-                }}
-            />
             <input
                 ref={inputRef}
                 type="text"
