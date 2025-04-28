@@ -114,7 +114,7 @@ const useZombies = (
                 prev
                     .map((z) => ({ ...z, position: z.position + z.speed })) // Move each enemy by its speed
                     .filter((z) => {
-                        const threshold = window.innerHeight - 100;
+                        const threshold = window.innerHeight - 90; // canons height (100px) minus 10px
                         if (z.position >= threshold) {
                             // Zombie reaches the top of input field
                             setHealth((prevHealth) => {
