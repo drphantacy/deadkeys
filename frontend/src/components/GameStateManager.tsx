@@ -231,7 +231,7 @@ const GameStateManager: React.FC = () => {
                                     textAlign: 'left',
                                 }}>
                                     <span style={{ fontSize: '12px' }}>
-                                        Fully On-Chain, Powered by:
+                                        Powered by:
                                     </span>
                                     <img
                                         src="/images/Linera_Red_White_H.png"
