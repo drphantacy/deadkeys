@@ -137,7 +137,7 @@ const useZombies = (
         return () => clearInterval(moveInterval); // Cleanup interval on unmount
     }, [onGameOver, onZombieReachBottom, setHealth]);
 
-    const handleZombieHit = (input: string, resetInput: () => void, onScoreUpdate: (points: number) => void, onWpmUpdate?: (wpm: number) => void) => {
+    const handleZombieHit = (input: string, resetInput: () => void, onScoreUpdate: (points: number) => void, onWpmUpdate?: (wpm: number) => void): string | void => {
         const matchingZombie = zombies.find((z) => z.word.startsWith(input)); // Compare input including spaces
         if (matchingZombie) {
             const progress = (input.length / matchingZombie.word.length) * 100;
@@ -156,7 +156,13 @@ const useZombies = (
                 const elapsedSec = (now - matchingZombie.spawnTime) / 1000;
                 const chars = matchingZombie.word.length;
                 const wpm = Math.round((chars * 60) / (5 * elapsedSec));
-                const basePoints = 10;
+                const basePoints = matchingZombie.type === 'zombie'
+                    ? 100
+                    : matchingZombie.type === 'mummy'
+                        ? 300
+                        : matchingZombie.type === 'bat'
+                            ? 500
+                            : 0;
                 const points = basePoints + wpm;
                 // Remove zombie
                 setZombies((prev) => prev.filter((z) => z.id !== matchingZombie.id));
@@ -170,6 +176,7 @@ const useZombies = (
                 // Defer WPM update if provided
                 if (onWpmUpdate) setTimeout(() => onWpmUpdate(wpm), 0);
                 resetInput();
+                return matchingZombie.type;
             }
         }
     };

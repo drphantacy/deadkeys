@@ -23,6 +23,10 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZo
     const [flashWpm, setFlashWpm] = useState(false);
     const [restartSignal, setRestartSignal] = useState(false); // Add restart signal
     const gunSoundRef = useRef<HTMLAudioElement | null>(null);
+    const batDieRef = useRef<HTMLAudioElement | null>(null);
+    const mummyDieRef = useRef<HTMLAudioElement | null>(null);
+    const zombieDieRef = useRef<HTMLAudioElement | null>(null);
+    const attackRef = useRef<HTMLAudioElement | null>(null);
     const inputRef = useRef<HTMLInputElement | null>(null); // Ref for the input box
 
     const { timeLeft } = useTimer(60, onGameOver); // Use timeLeft from the hook
@@ -59,10 +63,17 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZo
         }
     }, [bestWpm]);
 
+    useEffect(() => {
+        if (screenEffect && attackRef.current) {
+            attackRef.current.currentTime = 0;
+            attackRef.current.play();
+        }
+    }, [screenEffect]);
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const input = e.target.value;
         setPlayerInput(input);
-        handleZombieHit(
+        const killType = handleZombieHit(
             input,
             () => setPlayerInput(''),
             (points) => {
@@ -81,6 +92,9 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZo
             gunSoundRef.current.currentTime = 0;
             gunSoundRef.current.play();
         }
+        if (killType === 'bat') batDieRef.current?.play();
+        else if (killType === 'mummy') mummyDieRef.current?.play();
+        else if (killType === 'zombie') zombieDieRef.current?.play();
     };
 
     const restartGame = () => {
@@ -118,6 +132,10 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZo
                     }}/>
                 )}
                 <audio ref={gunSoundRef} src="/sounds/gunshot.mp3" preload="auto"></audio>
+                <audio ref={batDieRef} src="/sounds/bat-die.mp3" preload="auto"></audio>
+                <audio ref={mummyDieRef} src="/sounds/mummy-die.mp3" preload="auto"></audio>
+                <audio ref={zombieDieRef} src="/sounds/zombie-die.mp3" preload="auto"></audio>
+                <audio ref={attackRef} src="/sounds/zomb-attack.mp3" preload="auto"></audio>
                 <style>{`@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');`}</style>
                 <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '15px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: '0 10px', gap: '10px' }}>
