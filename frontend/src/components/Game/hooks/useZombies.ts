@@ -35,7 +35,7 @@ const useZombies = (
                     return [
                         ...prev,
                         (() => {
-                            // Only spawn mummies after 5 zombie kills
+                            // Only spawn zombies initially, then include mummies and bats
                             if (zombieKillCountRef.current < 5) {
                                 return {
                                     id: now,
@@ -48,7 +48,9 @@ const useZombies = (
                                     speed: 1, // slow
                                 };
                             } else {
-                                if (Math.random() < 0.5) {
+                                const rand = Math.random();
+                                if (rand < 0.4) {
+                                    // spawn another zombie
                                     return {
                                         id: now,
                                         word: newWord,
@@ -57,9 +59,10 @@ const useZombies = (
                                         health: 100,
                                         spawnTime: now,
                                         type: 'zombie',
-                                        speed: 1, // slow
+                                        speed: 1,
                                     };
-                                } else {
+                                } else if (rand < 0.85) {
+                                    // spawn a mummy
                                     return {
                                         id: now,
                                         word: newWord,
@@ -69,6 +72,18 @@ const useZombies = (
                                         spawnTime: now,
                                         type: 'mummy',
                                         speed: 2, // fast
+                                    };
+                                } else {
+                                    // spawn a bat
+                                    return {
+                                        id: now,
+                                        word: newWord,
+                                        position: 0,
+                                        left,
+                                        health: 100,
+                                        spawnTime: now,
+                                        type: 'bat',
+                                        speed: 3, // faster than mummy
                                     };
                                 }
                             }

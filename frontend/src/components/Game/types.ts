@@ -17,5 +17,9 @@ export interface Mummy extends EnemyBase {
     speed: number;
 }
 
-export type Enemy = Zombie | Mummy;
+export interface Bat extends EnemyBase {
+    type: 'bat';
+    speed: number;
+}
 
+export type Enemy = Zombie | Mummy | Bat;

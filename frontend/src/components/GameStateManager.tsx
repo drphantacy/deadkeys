@@ -246,6 +246,7 @@ const GameStateManager: React.FC = () => {
                               <style>{`
                                 @keyframes openLeft { from { transform: translateX(0); } to { transform: translateX(-100%); } }
                                 @keyframes openRight { from { transform: translateX(0); } to { transform: translateX(100%); } }
+                                @keyframes riseCanons { 0% { transform: translateY(100%); } 100% { transform: translateY(0); } }
                               `}</style>
                               <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', overflow: 'hidden', zIndex: 1002 }}>
                                 <div style={{
@@ -278,6 +279,22 @@ const GameStateManager: React.FC = () => {
                                       disabled={!chainId || lineraLoading}
                                   />
                                 </div>
+                                <img
+                                  src="/images/canons.png"
+                                  alt="Canon"
+                                  style={{
+                                    position: 'fixed',
+                                    left: 0,
+                                    bottom: 0,
+                                    width: '100%',
+                                    height: 'auto',
+                                    zIndex: 1001,
+                                    pointerEvents: 'none',
+                                    imageRendering: 'pixelated',
+                                    transform: 'translateY(100%)',
+                                    animation: 'riseCanons 2s ease-out forwards',
+                                  }}
+                                />
                               </div>
                             </>
                           )}

@@ -125,6 +125,25 @@ const Zombie: React.FC<ZombieProps> = ({ zombie, isAttacked }) => {
                         }}
                     />
                 )}
+                {zombie.type === 'bat' && (
+                    <div
+                        style={{
+                            width: ZOMBIE_WIDTH,
+                            height: ZOMBIE_HEIGHT,
+                            backgroundImage: 'url(/images/bat.png)',
+                            backgroundPosition: `${bgX}px ${bgY}px`,
+                            backgroundSize: `${SPRITE_WIDTH}px ${SPRITE_HEIGHT}px`,
+                            imageRendering: 'pixelated',
+                            transform: 'scale(0.16, 0.16)',
+                            position: 'absolute',
+                            left: '50%',
+                            top: -12,
+                            transformOrigin: 'top center',
+                            translate: '-50%',
+                            pointerEvents: 'none',
+                        }}
+                    />
+                )}
             </div>
             {/* Word label further below feet */}
             {(() => {
