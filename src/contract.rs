@@ -71,11 +71,6 @@ impl Contract for DeadKeysContract {
     }
 
     async fn execute_message(&mut self, message: Message) {
-        // Record incoming message for front-end subscriptions
-        self.state
-            .incoming_messages
-            .append(&message)
-            .expect("Failed to record incoming message");
         match message {
             Message::Send { game_id, word, msg_type } => {
                 info!("🔔 Received Send: gameId={}, word={}, type={}", game_id, word, msg_type);
