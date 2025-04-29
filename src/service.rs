@@ -6,9 +6,10 @@ use std::sync::Arc;
 
 use async_graphql::{EmptySubscription, Object, Request, Response, Schema};
 use linera_sdk::{linera_base_types::WithServiceAbi, views::View, Service, ServiceRuntime};
+use deadkeys::Operation;
+use linera_sdk::linera_base_types::ChainId;
 
 use self::state::DeadKeysState;
-use deadkeys::Operation;
 
 pub struct DeadKeysService {
     state: Arc<DeadKeysState>,
@@ -59,9 +60,25 @@ impl MutationRoot {
         #[graphql(name = "gameId")] game_id: String,
         value: u64,
     ) -> bool {
-        let op = Operation { game_id, value };
+        let op = Operation::UpdateScore { game_id, value };
         self.runtime.schedule_operation(&op);
         true
+    }
+
+    /// Schedule a cross-chain message send operation
+    #[graphql(name = "sendMessage")]
+    async fn send_message(
+        &self,
+        #[graphql(name = "targetChain")] target_chain: String,
+        data: String,
+    ) -> String {
+        // Parse the target chain ID
+        let chain_id: ChainId = target_chain.parse().expect("Invalid ChainId");
+        // Schedule the send operation
+        let op = Operation::Send { target_chain: chain_id, data: data.clone() };
+        self.runtime.schedule_operation(&op);
+        // Echo back the message data
+        data
     }
 }
 

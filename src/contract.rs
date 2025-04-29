@@ -5,14 +5,14 @@
 
 mod state;
 
-use deadkeys::{DeadKeysAbi, Operation}; // Import ABI and Operation struct
+use deadkeys::{DeadKeysAbi, Operation, Message}; // Import ABI, operations, and messages
 use linera_sdk::{
     linera_base_types::WithContractAbi,
     util::BlockingWait as _,        // For synchronous MapView.get in contract
     views::{RootView, View},
     Contract, ContractRuntime,
 };
-
+use log::info;
 use self::state::DeadKeysState;
 
 pub struct DeadKeysContract {
@@ -27,7 +27,7 @@ impl WithContractAbi for DeadKeysContract {
 }
 
 impl Contract for DeadKeysContract {
-    type Message = ();
+    type Message = Message;
     type InstantiationArgument = u64;
     type Parameters = ();
     type EventValue = ();
@@ -46,24 +46,42 @@ impl Contract for DeadKeysContract {
     }
 
     async fn execute_operation(&mut self, operation: Operation) -> u64 {
-        // Read existing score synchronously in contract context
-        let current = self.state
-            .scores
-            .get(&operation.game_id)
-            .blocking_wait()          // sync wait for get future
-            .unwrap_or_default()      // Result<Option<u64>, _> -> Option<u64>
-            .unwrap_or_default();     // Option<u64> -> u64
-        let new_score = current + operation.value;
-        // Persist updated score immediately
-        self.state
-            .scores
-            .insert(&operation.game_id, new_score)
-            .expect("Failed to insert score");
-        new_score
+        match operation {
+            Operation::UpdateScore { game_id, value } => {
+                let current = self.state
+                    .scores
+                    .get(&game_id)
+                    .blocking_wait()
+                    .unwrap_or_default()
+                    .unwrap_or_default();
+                let new_score = current + value;
+                self.state
+                    .scores
+                    .insert(&game_id, new_score)
+                    .expect("Failed to insert score");
+                new_score
+            }
+            Operation::Send { target_chain, data } => {
+                let msg = Message::Send { data };
+                self.runtime
+                    .prepare_message(msg)
+                    .with_authentication()
+                    .with_tracking()
+                    .send_to(target_chain);
+                0
+            }
+        }
     }
 
-    async fn execute_message(&mut self, _message: ()) {
-        panic!("DeadKeys application doesn't support any cross-chain messages");
+    async fn execute_message(&mut self, message: Message) {
+        match message {
+            Message::Send { data } => {
+                info!("🔔 Received Send: {}", data);
+            }
+            Message::Receive { data } => {
+                info!("🔔 Received Receive: {}", data);
+            }
+        }
     }
 
     async fn store(mut self) {
@@ -76,14 +94,14 @@ mod tests {
     use futures::FutureExt as _;
     use linera_sdk::util::BlockingWait as _;
     use linera_sdk::{util::BlockingWait, views::View, Contract, ContractRuntime};
-    use deadkeys::Operation;
+    use deadkeys::{Operation, Message};
     use super::{DeadKeysContract, DeadKeysState};
 
     #[test]
     fn operation() {
         let mut contract = create_and_instantiate_DeadKeys(0);
         let increment = 42_308_u64;
-        let op = Operation { game_id: "game1".to_string(), value: increment };
+        let op = Operation::UpdateScore { game_id: "game1".to_string(), value: increment };
 
         // Execute operation
         let response = contract
@@ -104,22 +122,24 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "DeadKeys application doesn't support any cross-chain messages")]
     fn message() {
         let initial_value = 72_u64;
-        let mut DeadKeys = create_and_instantiate_DeadKeys(initial_value);
-
-        DeadKeys
-            .execute_message(())
+        let mut contract = create_and_instantiate_DeadKeys(initial_value);
+        let send_msg = Message::Send { data: "foo".to_string() };
+        contract.execute_message(send_msg)
             .now_or_never()
-            .expect("Execution of DeadKeys operation should not await anything");
+            .expect("Send should not panic");
+        let receive_msg = Message::Receive { data: "bar".to_string() };
+        contract.execute_message(receive_msg)
+            .now_or_never()
+            .expect("Receive should not panic");
     }
 
     #[test]
     fn cross_application_call() {
         let mut contract = create_and_instantiate_DeadKeys(0);
         let increment = 8_u64;
-        let op = Operation { game_id: "game2".to_string(), value: increment };
+        let op = Operation::UpdateScore { game_id: "game2".to_string(), value: increment };
 
         let response = contract
             .execute_operation(op.clone())
