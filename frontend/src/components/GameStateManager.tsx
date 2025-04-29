@@ -200,8 +200,7 @@ const GameStateManager: React.FC = () => {
                 }
                 `}
             </style>
-            {/* DEBUG: reset onboarding for testing */}
-            <button
+            {/* <button
                 onClick={handleResetOnboarding}
                 style={{
                     position: 'absolute',
@@ -214,14 +213,13 @@ const GameStateManager: React.FC = () => {
                 }}
             >
                 Reset Onboarding
-            </button>
-            {/* Overlay onboarding panel (no extra dim layer) */}
+            </button> */}
         </div>
         {showOnboardingOverlay && (
             <div style={{
                 position: 'fixed', top: 0, left: 0,
                     width: '100vw', height: '100vh',
-                    backgroundImage: 'linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url("/images/startscreen.png")',
+                    backgroundImage: 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url("/images/startscreen.png")',
                     backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
                     zIndex: 1002, pointerEvents: 'auto',
                     display: 'flex', justifyContent: 'center', alignItems: 'center'
@@ -230,12 +228,21 @@ const GameStateManager: React.FC = () => {
                     localStorage.setItem('seenOnboarding', 'true');
                     setShowOnboardingOverlay(false);
                 }} style={{
-                    position: 'absolute', top: 16, right: 16,
-                    width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '16px', fontFamily: 'monospace', color: 'rgb(222, 42, 2)',
-                    border: '2px solid rgb(222, 42, 2)', borderRadius: '8px', background: 'transparent',
-                    padding: 0, lineHeight: 1, cursor: 'pointer', zIndex: 1003
-                }}>X</button>
+                    position: 'absolute', top: '16px', right: '16px',
+                    marginTop: '10px',
+                    marginRight: '10px',
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    padding: '8px 10px',
+                    fontSize: '12.5px',
+                    fontFamily: '"Press Start 2P", monospace',
+                    color: 'yellow',
+                    background: 'transparent',
+                    border: '1px solid yellow',
+                    outline: 'none',
+                    imageRendering: 'pixelated',
+                    cursor: 'pointer',
+                    zIndex: 1003
+                }}>Close</button>
                 <OnboardingScreen onStart={handleOnboardingStart} disabled={!chainId || lineraLoading} />
             </div>
         )}

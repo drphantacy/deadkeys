@@ -58,7 +58,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onStart, disabled }
         alignItems: 'center',
         justifyContent: 'center',
         padding: '20px',
-        fontFamily: 'monospace',
+        fontFamily: '"Press Start 2P", monospace',
         textAlign: 'center',
       }}
     >
@@ -69,13 +69,34 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onStart, disabled }
           }
         `}
       </style>
-      <h1>How to Play</h1>
-      <ul style={{ textAlign: 'left', maxWidth: 400 }}>
+      <h1 style={{
+        fontFamily: '"Press Start 2P", monospace',
+        fontSize: '36px',
+        margin: '20px 0',
+        textShadow: '2px 4px 8px #000'
+      }}>How to Play</h1>
+      <ul style={{
+        textAlign: 'left',
+        maxWidth: 600,
+        fontWeight: 300,
+        lineHeight: 2,
+        fontSize: '14px',
+      }}>
         <li>Type the word above each zombie to eliminate it.</li>
         <li>Faster typing = higher score.</li>
         <li>You have 3 lives. Zombies reaching your base cost you a life.</li>
-        <li>Type 'gmicrochains' to kill the first zombie!</li>
       </ul>
+      <p style={{
+        width: '100%',
+        textAlign: 'center',
+        color: 'yellow',
+        fontFamily: '"Press Start 2P", monospace',
+        fontSize: '20px',
+        textShadow: '2px 2px 4px #000',
+        margin: '20px 0'
+      }}>
+        Try typing below!
+      </p>
       <div
         className="demo-zombie"
         style={{
@@ -87,7 +108,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onStart, disabled }
       >
         {/* Health bar */}
         <div style={{
-          width: '200px', height: '12px', backgroundColor: 'red',
+          width: '100px', height: '12px', backgroundColor: 'red',
           borderRadius: '4px', marginBottom: '8px', overflow: 'hidden',
         }}>
           <div style={{
@@ -121,28 +142,40 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onStart, disabled }
             autoFocus
             onChange={handleInputChange}
             style={{
-              fontSize: '20px',
-              padding: '10px',
-              fontFamily: 'monospace',
-              width: '200px',
+              fontFamily: '"Press Start 2P", monospace',
+              fontSize: '24px',
+              padding: '12px',
+              background: 'rgba(0,0,0,0.6)',
+              borderWidth: '3px',
+              borderStyle: 'solid',
+              borderColor: 'yellow #FFD600 #FFEA00 #FFFF00',
+              color: 'yellow',
               textAlign: 'center',
+              imageRendering: 'pixelated',
+              outline: 'none',
+              width: '40vw',
+              maxWidth: '350px',
             }}
           />
         </>
       ) : (
         <button
           onClick={onStart}
-          disabled={disabled}
           style={{
+            fontFamily: '"Press Start 2P", monospace',
             fontSize: '20px',
             padding: '10px 20px',
-            cursor: disabled ? 'not-allowed' : 'pointer',
-            opacity: disabled ? 0.5 : 1,
-            fontFamily: 'monospace',
+            color: 'yellow',
+            background: 'transparent',
+            border: '2px solid yellow',
+            cursor: 'pointer',
+            opacity: 1,
             marginTop: '10px',
+            imageRendering: 'pixelated',
+            outline: 'none',
           }}
         >
-          Start Playing
+          Let's Go!
         </button>
       )}
     </div>
