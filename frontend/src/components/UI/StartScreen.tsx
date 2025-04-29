@@ -5,6 +5,7 @@ interface StartScreenProps {
     onStart: () => void;
     onHowTo: () => void;
     onViewLeaderboard: () => void;
+    onPVP: () => void;
     disabled?: boolean;
     statusText?: string;
     chainId?: string;
@@ -12,7 +13,7 @@ interface StartScreenProps {
     gameId: string;
 }
 
-const StartScreen: React.FC<StartScreenProps> = ({ onStart, onHowTo, onViewLeaderboard, disabled, statusText, chainId, incomingMessage, gameId }) => {
+const StartScreen: React.FC<StartScreenProps> = ({ onStart, onHowTo, onViewLeaderboard, onPVP, disabled, statusText, chainId, incomingMessage, gameId }) => {
     const mouseOverRef = React.useRef<HTMLAudioElement>(null);
     const welcomeAudioRef = React.useRef<HTMLAudioElement>(null);
 
@@ -84,6 +85,28 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, onHowTo, onViewLeade
                 >
                     {statusText || 'Start Game'}
                 </button>
+                <button
+                    className="start-btn"
+                    onClick={onPVP}
+                    // disabled={disabled}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                    style={{
+                        fontFamily: '"Press Start 2P", monospace',
+                        fontSize: '20px',
+                        color: 'yellow',
+                        background: 'transparent',
+                        border: '2px solid yellow',
+                        padding: '10px 20px',
+                        // cursor: disabled ? 'not-allowed' : 'pointer',
+                        // opacity: disabled ? 0.5 : 1,
+                        imageRendering: 'pixelated',
+                        outline: 'none',
+                        marginTop: '10px'
+                    }}
+                >
+                    PVP Mode
+                </button>
                 <div style={{ marginTop: '20px' }}>
                     <button onClick={onHowTo} style={{
                         fontFamily: '"Press Start 2P", monospace',
@@ -151,35 +174,6 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, onHowTo, onViewLeade
                         placeholder="Your message"
                         style={{ fontFamily: '"Press Start 2P", monospace', fontSize: '12px', color: '#aaa', background: 'transparent', border: '1px solid #555', padding: '4px', marginLeft: '10px', width: '200px' }}
                     />
-                    <button
-                        disabled={!application}
-                        onClick={async () => {
-                            if (!application) {
-                                setRefreshMessage('Not ready');
-                                return;
-                            }
-                            try {
-                                const resp = await application.query(
-                                    JSON.stringify({ query: `mutation { updateScore(gameId:"keepAlive", value:0) }` })
-                                );
-                                console.log('refresh response:', resp);
-                                const parsed = JSON.parse(resp) as any;
-                                if (parsed.errors && parsed.errors.length) {
-                                    setRefreshMessage(parsed.errors.map((e: any) => e.message).join(', '));
-                                } else if (parsed.data?.updateScore != null) {
-                                    setRefreshMessage(parsed.data.updateScore ? 'Refreshed' : 'Not refreshed');
-                                } else {
-                                    setRefreshMessage('No response');
-                                }
-                            } catch (err: any) {
-                                console.error('refresh error', err);
-                                setRefreshMessage(err.message || 'Error');
-                            }
-                        }}
-                        style={{ fontFamily: '"Press Start 2P", monospace', background: 'transparent', border: '2px solid lime', color: 'lime', padding: '6px 12px', cursor: 'pointer', marginLeft: '10px' }}
-                    >
-                        Refresh Inbox
-                    </button>
                     {incomingMessage && (
                         <div style={{ marginTop: '8px', color: 'magenta', fontSize: '14px' }}>
                             Incoming: {incomingMessage}

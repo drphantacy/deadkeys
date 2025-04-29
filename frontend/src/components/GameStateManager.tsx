@@ -6,11 +6,12 @@ import Leaderboard from './Leaderboard/Leaderboard';
 import GameOver from './Game/GameOver';
 import StartScreen from './UI/StartScreen';
 import OnboardingScreen from './UI/OnboardingScreen';
+import PVPModeScreen from './UI/PVPModeScreen';
 import { useLeaderboard } from '../hooks/useLeaderboard';
 
 const GameStateManager: React.FC = () => {
     // Always start at the start-screen first
-    const [gameState, setGameState] = useState<'start' | 'playing' | 'gameOver' | 'leaderboard'>('start');
+    const [gameState, setGameState] = useState<'start' | 'playing' | 'gameOver' | 'leaderboard' | 'pvp'>('start');
 
     // Overlay flag for onboarding tutorial
     const [showOnboardingOverlay, setShowOnboardingOverlay] = useState(
