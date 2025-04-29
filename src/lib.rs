@@ -18,12 +18,12 @@ impl ServiceAbi for DeadKeysAbi {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Operation {
     UpdateScore { game_id: String, value: u64 },
-    Send { target_chain: ChainId, data: String },
+    Send { target_chain: ChainId, game_id: String, word: String, msg_type: String },
 }
 
 /// Cross-chain message payloads: Send/Receive
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Message {
-    Send    { data: String },
-    Receive { data: String },
+    Send    { game_id: String, word: String, msg_type: String },
+    Receive { game_id: String, word: String, msg_type: String },
 }

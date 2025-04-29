@@ -29,6 +29,7 @@ const GameStateManager: React.FC = () => {
     const [bestWpm, setBestWpm] = useState<number>(0);
     const [isSplitting, setIsSplitting] = useState<boolean>(false);
     const { client, application, chainId, loading: lineraLoading, status, error: lineraError } = useLinera();
+    const [incomingMessage, setIncomingMessage] = useState<string>('');
 
     useEffect(() => {
         console.log('GameStateManager - chainId from context:', chainId);
@@ -37,24 +38,65 @@ const GameStateManager: React.FC = () => {
     useEffect(() => {
         if (!lineraLoading && application && client && gameId) {
             client.onNotification(async (note: any) => {
+                console.log('🔔 Notification:', note);
+                console.log("🔔  Reason keys:", Object.keys(note.reason));
+                console.log("🔔  Payload:", note.reason);
+                const reason = note.reason || {} as Record<string, any>;
+                if (reason.NewIncomingMessage) {
+                    (reason.NewIncomingMessage as any[]).forEach((entry: any) => {
+                        console.log('🔔 NewIncomingMessage entry:', entry);
+                        if (entry.value != null) {
+                            setIncomingMessage(entry.value as string);
+                        }
+                    });
+                }
                 if (note.reason.NewBlock) {
                     try {
                         console.log('Subscription NewBlock received, querying score');
                         const resp = await application.query(
                             JSON.stringify({ query: `query { score(gameId:"${gameId}") }` })
                         );
-                        console.log('Subscription response:', resp);
+                        console.log('🔔 Subscription response:', resp);
                         const { data } = JSON.parse(resp);
-                        console.log('Subscription new score for', gameId, ':', data.score);
+                        console.log('🔔 Subscription new score for', gameId, ':', data.score);
                         setChainScore(data.score);
                     } catch (err) {
-                        console.error('subscription error', err);
+                        console.error('🔔 subscription error', err);
                         setDebugError(err instanceof Error ? err.message : String(err));
                     }
                 }
             });
         }
     }, [lineraLoading, application, client, gameId]);
+
+    // useEffect(() => {
+    //     if (!client) return;
+    //     client.onNotification((note: any) => {
+    //         console.log('🔔 Notification:', note);
+    //         if (note.reason.NewBlock) {
+    //             console.log('🔔 Notification:', note.reason.NewBlock);
+    //         }
+    //         // Extract and inspect the reason object
+    //         const reason = (note.reason ?? {}) as Record<string, any>;
+    //         console.log('🔔 Reason keys:', Object.keys(reason));
+    //         // Iterate through each variant payload
+    //         Object.keys(reason).forEach(key => {
+    //             const payload = reason[key];
+    //             console.log(`🔔 reason[${key}]:`, payload);
+    //             if (Array.isArray(payload)) {
+    //                 payload.forEach((entry: any) => {
+    //                     if (entry && entry.data != null) {
+    //                         console.log(`✨ Data in ${key}:`, entry.data);
+    //                         setIncomingMessage(entry.data as string);
+    //                     }
+    //                 });
+    //             } else if (payload && payload.data != null) {
+    //                 console.log(`✨ Data in ${key}:`, payload.data);
+    //                 setIncomingMessage(payload.data as string);
+    //             }
+    //         });
+    //     });
+    // }, [client]);
 
     const handleStart = () => {
         setIsSplitting(true);
@@ -218,6 +260,8 @@ const GameStateManager: React.FC = () => {
                                     disabled={!chainId || lineraLoading}
                                     statusText={statusTextToDisplay}
                                     chainId={chainId}
+                                    incomingMessage={incomingMessage}
+                                    gameId={gameId}
                                 />
                                 {/* Linera branding on start screen */}
                                 <div style={{
@@ -262,6 +306,8 @@ const GameStateManager: React.FC = () => {
                                       onHowTo={handleHowTo}
                                       onViewLeaderboard={handleViewLeaderboard}
                                       disabled={!chainId || lineraLoading}
+                                      incomingMessage={incomingMessage}
+                                      gameId={gameId}
                                   />
                                 </div>
                                 <div style={{
@@ -277,6 +323,8 @@ const GameStateManager: React.FC = () => {
                                       onHowTo={handleHowTo}
                                       onViewLeaderboard={handleViewLeaderboard}
                                       disabled={!chainId || lineraLoading}
+                                      incomingMessage={incomingMessage}
+                                      gameId={gameId}
                                   />
                                 </div>
                                 <img

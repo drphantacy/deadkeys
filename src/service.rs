@@ -70,15 +70,17 @@ impl MutationRoot {
     async fn send_message(
         &self,
         #[graphql(name = "targetChain")] target_chain: String,
-        data: String,
+        #[graphql(name = "gameId")] game_id: String,
+        word: String,
+        #[graphql(name = "msgType")] msg_type: String,
     ) -> String {
         // Parse the target chain ID
         let chain_id: ChainId = target_chain.parse().expect("Invalid ChainId");
         // Schedule the send operation
-        let op = Operation::Send { target_chain: chain_id, data: data.clone() };
+        let op = Operation::Send { target_chain: chain_id, game_id: game_id.clone(), word: word.clone(), msg_type: msg_type.clone() };
         self.runtime.schedule_operation(&op);
-        // Echo back the message data
-        data
+        // Echo back the message word
+        word
     }
 }
 

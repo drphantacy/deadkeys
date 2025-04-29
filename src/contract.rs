@@ -1,6 +1,3 @@
-// Copyright (c) Zefchain Labs, Inc.
-// SPDX-License-Identifier: Apache-2.0
-
 #![cfg_attr(target_arch = "wasm32", no_main)]
 
 mod state;
@@ -61,8 +58,8 @@ impl Contract for DeadKeysContract {
                     .expect("Failed to insert score");
                 new_score
             }
-            Operation::Send { target_chain, data } => {
-                let msg = Message::Send { data };
+            Operation::Send { target_chain, game_id, word, msg_type } => {
+                let msg = Message::Send { game_id, word, msg_type };
                 self.runtime
                     .prepare_message(msg)
                     .with_authentication()
@@ -74,12 +71,17 @@ impl Contract for DeadKeysContract {
     }
 
     async fn execute_message(&mut self, message: Message) {
+        // Record incoming message for front-end subscriptions
+        self.state
+            .incoming_messages
+            .append(&message)
+            .expect("Failed to record incoming message");
         match message {
-            Message::Send { data } => {
-                info!("🔔 Received Send: {}", data);
+            Message::Send { game_id, word, msg_type } => {
+                info!("🔔 Received Send: gameId={}, word={}, type={}", game_id, word, msg_type);
             }
-            Message::Receive { data } => {
-                info!("🔔 Received Receive: {}", data);
+            Message::Receive { game_id, word, msg_type } => {
+                info!("🔔 Received Receive: gameId={}, word={}, type={}", game_id, word, msg_type);
             }
         }
     }
@@ -125,11 +127,11 @@ mod tests {
     fn message() {
         let initial_value = 72_u64;
         let mut contract = create_and_instantiate_DeadKeys(initial_value);
-        let send_msg = Message::Send { data: "foo".to_string() };
+        let send_msg = Message::Send { game_id: "test".to_string(), word: "foo".to_string(), msg_type: "send".to_string() };
         contract.execute_message(send_msg)
             .now_or_never()
             .expect("Send should not panic");
-        let receive_msg = Message::Receive { data: "bar".to_string() };
+        let receive_msg = Message::Receive { game_id: "test".to_string(), word: "bar".to_string(), msg_type: "receive".to_string() };
         contract.execute_message(receive_msg)
             .now_or_never()
             .expect("Receive should not panic");

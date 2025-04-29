@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLinera } from '../../linera/LineraProvider';
 
 interface StartScreenProps {
     onStart: () => void;
@@ -7,9 +8,11 @@ interface StartScreenProps {
     disabled?: boolean;
     statusText?: string;
     chainId?: string;
+    incomingMessage?: string;
+    gameId: string;
 }
 
-const StartScreen: React.FC<StartScreenProps> = ({ onStart, onHowTo, onViewLeaderboard, disabled, statusText, chainId }) => {
+const StartScreen: React.FC<StartScreenProps> = ({ onStart, onHowTo, onViewLeaderboard, disabled, statusText, chainId, incomingMessage, gameId }) => {
     const mouseOverRef = React.useRef<HTMLAudioElement>(null);
     const welcomeAudioRef = React.useRef<HTMLAudioElement>(null);
 
@@ -28,7 +31,12 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, onHowTo, onViewLeade
         }
     };
 
+    const { application } = useLinera();
     const [showWelcome, setShowWelcome] = React.useState<boolean>(() => !localStorage.getItem('seenWelcome'));
+    const [testMessage, setTestMessage] = React.useState<string>('');
+    const [targetChainInput, setTargetChainInput] = React.useState<string>('');
+    const [messageInput, setMessageInput] = React.useState<string>('');
+    const [refreshMessage, setRefreshMessage] = React.useState<string>('');
 
     return (
         <>
@@ -89,6 +97,104 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, onHowTo, onViewLeade
                     }}>
                         How to Play
                     </button>
+                    <button
+                        disabled={disabled}
+                        onClick={async () => {
+                            if (!application || !targetChainInput) {
+                                setTestMessage('Target chain not set');
+                                return;
+                            }
+                            try {
+                                const resp = await application.query(
+                                    JSON.stringify({
+                                        query: `mutation { sendMessage(targetChain:"${targetChainInput}", gameId:"${gameId}", word:"${messageInput}", msgType:"send") }`,
+                                    })
+                                );
+                                console.log('sendMessage response:', resp);
+                                const parsed = JSON.parse(resp) as any;
+                                if (parsed.errors && parsed.errors.length) {
+                                    setTestMessage(parsed.errors.map((e: any) => e.message).join(', '));
+                                } else if (parsed.data?.sendMessage != null) {
+                                    setTestMessage(parsed.data.sendMessage);
+                                } else {
+                                    setTestMessage('No response from sendMessage');
+                                }
+                            } catch (err: any) {
+                                console.error('sendMessage error', err);
+                                setTestMessage(err.message || 'Send error');
+                            }
+                        }}
+                        style={{
+                            fontFamily: '"Press Start 2P", monospace',
+                            background: 'transparent',
+                            border: '2px solid cyan',
+                            color: 'cyan',
+                            padding: '6px 12px',
+                            cursor: 'pointer',
+                            imageRendering: 'pixelated',
+                            marginLeft: '10px'
+                        }}
+                    >
+                        Test Message
+                    </button>
+                    <input
+                        type="text"
+                        value={targetChainInput}
+                        onChange={e => setTargetChainInput(e.target.value)}
+                        placeholder="Target Chain ID"
+                        style={{ fontFamily: '"Press Start 2P", monospace', fontSize: '12px', color: '#aaa', background: 'transparent', border: '1px solid #555', padding: '4px', marginLeft: '10px', width: '200px' }}
+                    />
+                    <input
+                        type="text"
+                        value={messageInput}
+                        onChange={e => setMessageInput(e.target.value)}
+                        placeholder="Your message"
+                        style={{ fontFamily: '"Press Start 2P", monospace', fontSize: '12px', color: '#aaa', background: 'transparent', border: '1px solid #555', padding: '4px', marginLeft: '10px', width: '200px' }}
+                    />
+                    <button
+                        disabled={!application}
+                        onClick={async () => {
+                            if (!application) {
+                                setRefreshMessage('Not ready');
+                                return;
+                            }
+                            try {
+                                const resp = await application.query(
+                                    JSON.stringify({ query: `mutation { updateScore(gameId:"keepAlive", value:0) }` })
+                                );
+                                console.log('refresh response:', resp);
+                                const parsed = JSON.parse(resp) as any;
+                                if (parsed.errors && parsed.errors.length) {
+                                    setRefreshMessage(parsed.errors.map((e: any) => e.message).join(', '));
+                                } else if (parsed.data?.updateScore != null) {
+                                    setRefreshMessage(parsed.data.updateScore ? 'Refreshed' : 'Not refreshed');
+                                } else {
+                                    setRefreshMessage('No response');
+                                }
+                            } catch (err: any) {
+                                console.error('refresh error', err);
+                                setRefreshMessage(err.message || 'Error');
+                            }
+                        }}
+                        style={{ fontFamily: '"Press Start 2P", monospace', background: 'transparent', border: '2px solid lime', color: 'lime', padding: '6px 12px', cursor: 'pointer', marginLeft: '10px' }}
+                    >
+                        Refresh Inbox
+                    </button>
+                    {incomingMessage && (
+                        <div style={{ marginTop: '8px', color: 'magenta', fontSize: '14px' }}>
+                            Incoming: {incomingMessage}
+                        </div>
+                    )}
+                    {testMessage && (
+                        <div style={{ marginTop: '8px', color: 'cyan', fontSize: '14px' }}>
+                            {testMessage}
+                        </div>
+                    )}
+                    {refreshMessage && (
+                        <div style={{ marginTop: '8px', color: 'lime', fontSize: '14px' }}>
+                            {refreshMessage}
+                        </div>
+                    )}
                     {chainId && (
                         <div style={{
                             margin: '40px auto 0 auto',
