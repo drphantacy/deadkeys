@@ -16,6 +16,7 @@ const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose, incomin
   const [dots, setDots] = useState<string>('');
   const [isJoining, setIsJoining] = useState<boolean>(false);
   const [canStart, setCanStart] = useState<boolean>(false);
+  const [isStarting, setIsStarting] = useState<boolean>(false);
 
   useEffect(() => {
     if (mode === 'hosting' || (mode === 'joining' && isJoining)) {
@@ -50,8 +51,9 @@ const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose, incomin
       fontFamily: '"Press Start 2P", monospace',
       textAlign: 'center',
     }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');`}</style>
       <button onClick={onClose} style={{
-        position: 'absolute', top: '16px', right: '16px',
+        position: 'fixed', top: '16px', right: '16px',
         padding: '8px 10px', fontSize: '12.5px',
         fontFamily: '"Press Start 2P", monospace',
         color: 'yellow', background: 'transparent', border: '1px solid yellow',
@@ -68,15 +70,24 @@ const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose, incomin
       <p style={{
         width: '100%',
         textAlign: 'center',
-        color: 'yellow',
+        color: 'white',
         fontFamily: '"Press Start 2P", monospace',
         fontSize: '20px',
         textShadow: '2px 2px 4px #000',
         margin: '20px 0',
       }}>
         Each zombie you kill will be sent to your opponent, highest score wins!
-        Opponent's Zombie word will be in Purple colour.
+        
       </p>
+      <p style={{
+        width: '100%',
+        textAlign: 'center',
+        color: 'white',
+        fontFamily: '"Press Start 2P", monospace',
+        fontSize: '20px',
+        textShadow: '2px 2px 4px #000',
+        margin: '0 0 60px',
+      }}>Opponent's Zombie word will be in Purple colour.</p>
 
       {mode === 'initial' && (
         <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
@@ -90,17 +101,28 @@ const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose, incomin
         
           <div style={{
             fontFamily: '"Press Start 2P", monospace',
-            color: 'white',
+            color: 'yellow',
             marginBottom: '8px',
           }}>
             {canStart ? 'Friend has joined. Let\'s start!' : 'Share your chain id with your friend:'}
           </div>
           <div style={{
-            fontFamily: '"Press Start 2P", monospace',
-            color: '#FFD600',
-            marginBottom: '16px',
+              margin: '0 auto 0 auto',
+              fontSize: 16,
+              color: '#aaa',
+              letterSpacing: 1,
+              textAlign: 'center',
+              opacity: 0.85,
+              lineHeight: '1.8',
+              wordBreak: 'break-all',
+              maxWidth: 500,
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.13)',
+              borderRadius: 8,
+              padding: '14px 20px',
+              boxSizing: 'border-box',
           }}>
-            {chainId}
+              {chainId}
           </div>
           {incomingType === 0 && (
             <div style={{ fontFamily: '"Press Start 2P", monospace', color: 'purple', marginBottom: '12px' }}>
@@ -108,24 +130,31 @@ const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose, incomin
             </div>
           )}
           
-          <button
-            onClick={async () => {
-              if (!application) return console.error('Linera app not ready');
-              try {
-                await application.query(
-                  JSON.stringify({ query: `mutation { sendMessage(targetChain:"${friendId}", word:"${chainId}", msgType:"5") }` })
-                );
-              } catch (err) {
-                console.error('sendMessage error', err);
-              }
-              onStart(friendId);
-            }}
-            style={buttonStyle}
-            disabled={!canStart}
-          >
-            Start Game
-          </button>
-          <button onClick={() => setMode('initial')} style={buttonStyle}>Back</button>
+          <div style={{ display: 'flex', gap: '16px', marginTop: '26px' }}>
+            {canStart && (
+              <button
+              onClick={async () => {
+                setIsStarting(true);
+                if (!application) return console.error('Linera app not ready');
+                try {
+                  await application.query(
+                    JSON.stringify({ query: `mutation { sendMessage(targetChain:"${friendId}", word:"${chainId}", msgType:"5") }` })
+                  );
+                } catch (err) {
+                  console.error('sendMessage error', err);
+                }
+                onStart(friendId);
+              }}
+              style={buttonStyle}
+              disabled={!canStart || isStarting}
+            >
+              {isStarting ? `Starting${dots}` : 'Start Game'}
+            </button>
+            )}
+            {!isStarting && (
+              <button onClick={() => setMode('initial')} style={buttonStyle}>Back</button>
+            )}
+          </div>
         </>
       )}
 
@@ -140,16 +169,16 @@ const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose, incomin
             disabled={isJoining}
           />
           {isJoining ? (
-            <>
-             {incomingType === 0 && incomingMessage && (
-              <div style={{ fontFamily: '"Press Start 2P", monospace', color: 'white', marginBottom: '8px' }}>
-                Waiting for Host{dots}
-              </div>
-            )}
+            <div style={{ display: 'flex', gap: '16px', marginTop: '26px', alignItems: 'center' }}>
+              {incomingType === 0 && incomingMessage && (
+                <div style={{ fontFamily: '"Press Start 2P", monospace', color: 'white' }}>
+                  Waiting for Host{dots}
+                </div>
+              )}
               <button onClick={() => setIsJoining(false)} style={buttonStyle}>Cancel</button>
-            </>
+            </div>
           ) : (
-            <>
+            <div style={{ display: 'flex', gap: '16px', marginTop: '26px' }}>
               <button onClick={async () => {
                 setIsJoining(true);
                 if (!application) {
@@ -165,7 +194,7 @@ const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose, incomin
                 }
               }} style={buttonStyle}>Enter</button>
               <button onClick={() => setMode('initial')} style={buttonStyle}>Back</button>
-            </>
+            </div>
           )}
         </>
       )}

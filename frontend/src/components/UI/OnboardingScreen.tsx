@@ -82,8 +82,8 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onStart, disabled }
         lineHeight: 2,
         fontSize: '14px',
       }}>
-        <li>Type the word above each zombie to eliminate it.</li>
-        <li>Faster typing = higher score.</li>
+        <li>Type the word at each zombie to eliminate it.</li>
+        <li>Faster typing == higher score.</li>
         <li>You have 3 lives. Zombies reaching your base cost you a life.</li>
       </ul>
       <p style={{

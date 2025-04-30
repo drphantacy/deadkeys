@@ -136,6 +136,14 @@ const GameStateManager: React.FC = () => {
         setGameState('start');
     };
 
+    const handlePVPRematch = () => {
+        setGameState('pvp');
+        setScore(0);
+        setChainScore(0);
+        setBestWpm(0);
+        setFriendScore(null);
+    };
+
     const triggerScreenEffect = () => {
         setScreenEffect(true);
         setTimeout(() => setScreenEffect(false), 200); // Reset effect after 0.2 seconds
@@ -409,13 +417,13 @@ const GameStateManager: React.FC = () => {
                                 {friendScore !== null && friendScore > score ? 'You Lose!' : 'You Win!'}
                             </h1>
                             <p style={{ fontSize: '24px', margin: '10px' }}>Your Score: {score}</p>
-                            <p style={{ fontSize: '24px', margin: '10px', color: 'purple' }}>Friend's Score: {friendScore ?? 0}</p>
-                            <button onClick={handleRestart} style={{
+                            <p style={{ fontSize: '24px', margin: '10px', color: 'white' }}>Friend's Score: {friendScore ?? 0}</p>
+                            <button onClick={handlePVPRematch} style={{
                                 fontFamily: '"Press Start 2P", monospace', fontSize: '20px', color: 'yellow',
                                 background: 'transparent', border: '2px solid yellow', padding: '10px 20px', cursor: 'pointer',
                                 imageRendering: 'pixelated', outline: 'none', marginTop: '20px'
                             }}>
-                                Try Again
+                                Rematch
                             </button>
                         </div>
                     ) : (
