@@ -31,6 +31,7 @@ const GameStateManager: React.FC = () => {
     const { client, application, chainId, loading: lineraLoading, status, error: lineraError } = useLinera();
     const [incomingMessage, setIncomingMessage] = useState<string>('');
     const [incomingMessageType, setIncomingMessageType] = useState<number | null>(null);
+    const [isPVPGame, setIsPVPGame] = useState<boolean>(false);
 
     useEffect(() => {
         console.log('GameStateManager - chainId from context:', chainId);
@@ -109,7 +110,8 @@ const GameStateManager: React.FC = () => {
     //     });
     // }, [client]);
 
-    const handleStart = () => {
+    const handleStart = (pvp: boolean = false) => {
+        setIsPVPGame(pvp);
         setIsSplitting(true);
         setTimeout(() => {
             setIsSplitting(false);
@@ -392,6 +394,7 @@ const GameStateManager: React.FC = () => {
                             onZombieReachBottom={triggerScreenEffect}
                             onWpmUpdate={setBestWpm}
                             screenEffect={screenEffect}
+                            pvpMode={isPVPGame}
                         />
                     ),
                     gameOver: (
@@ -418,7 +421,7 @@ const GameStateManager: React.FC = () => {
                               onClose={() => setGameState('start')}
                               incomingMessage={incomingMessage}
                               incomingType={incomingMessageType ?? -1}
-                              onStart={handleStart}
+                              onStart={() => handleStart(true)}
                             />
                         </div>
                     ),

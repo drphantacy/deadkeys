@@ -11,9 +11,10 @@ interface GameCanvasProps {
     onZombieReachBottom: () => void; // Callback to trigger screen effect
     onWpmUpdate?: (wpm: number) => void;
     screenEffect: boolean;
+    pvpMode: boolean;
 }
 
-const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZombieReachBottom, onWpmUpdate, screenEffect }) => {
+const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZombieReachBottom, onWpmUpdate, screenEffect, pvpMode }) => {
     const [playerInput, setPlayerInput] = useState('');
     const [health, setHealth] = useState(3);
     const [score, setScore] = useState(0); // Score state
@@ -172,6 +173,20 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZo
                     }}>
                         {timeLeft}s
                     </div>
+                    {pvpMode && (
+                        <div style={{
+                            position: 'absolute',
+                            top: '60px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            fontFamily: '"Press Start 2P", monospace',
+                            fontSize: '16px',
+                            color: 'red',
+                            textShadow: '2px 4px 8px #000, 0 2px 0 #222',
+                        }}>
+                            PVP Mode
+                        </div>
+                    )}
                     <div style={{ display: 'flex', gap: '5px', marginTop: '-15px', marginRight: '10px' }}>
                         {Array.from({ length: health }).map((_, index) => (
                             <img
