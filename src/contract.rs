@@ -2,7 +2,7 @@
 
 mod state;
 
-use deadkeys::{DeadKeysAbi, Operation, Message}; // Import ABI, operations, and messages
+use deadkeys::{DeadKeysAbi, Operation, Message, models::LastMessage}; // Import ABI, operations, and messages
 use linera_sdk::{
     linera_base_types::WithContractAbi,
     util::BlockingWait as _,        // For synchronous MapView.get in contract
@@ -58,8 +58,8 @@ impl Contract for DeadKeysContract {
                     .expect("Failed to insert score");
                 new_score
             }
-            Operation::Send { target_chain, game_id, word, msg_type } => {
-                let msg = Message::Send { game_id, word, msg_type };
+            Operation::Send { target_chain, word, msg_type } => {
+                let msg = Message::Send { word, msg_type };
                 self.runtime
                     .prepare_message(msg)
                     .with_authentication()
@@ -71,14 +71,15 @@ impl Contract for DeadKeysContract {
     }
 
     async fn execute_message(&mut self, message: Message) {
-        match message {
-            Message::Send { game_id, word, msg_type } => {
-                info!("🔔 Received Send: gameId={}, word={}, type={}", game_id, word, msg_type);
-            }
-            Message::Receive { game_id, word, msg_type } => {
-                info!("🔔 Received Receive: gameId={}, word={}, type={}", game_id, word, msg_type);
-            }
-        }
+        // Store the last global message
+        let (word, msg_type_str) = match message {
+            Message::Send { word, msg_type } | Message::Receive { word, msg_type } => (word, msg_type),
+        };
+        let r#type = msg_type_str.parse().unwrap_or_default();
+        let last = LastMessage { word, r#type };
+        self.state.last_message.insert("global", last.clone())
+            .expect("Failed to store last_message");
+        info!("🔔 Stored last global message: {:?}", last);
     }
 
     async fn store(mut self) {
@@ -96,7 +97,7 @@ mod tests {
 
     #[test]
     fn operation() {
-        let mut contract = create_and_instantiate_DeadKeys(0);
+        let mut contract = create_and_instantiate_deadKeys(0);
         let increment = 42_308_u64;
         let op = Operation::UpdateScore { game_id: "game1".to_string(), value: increment };
 
@@ -121,12 +122,12 @@ mod tests {
     #[test]
     fn message() {
         let initial_value = 72_u64;
-        let mut contract = create_and_instantiate_DeadKeys(initial_value);
-        let send_msg = Message::Send { game_id: "test".to_string(), word: "foo".to_string(), msg_type: "send".to_string() };
+        let mut contract = create_and_instantiate_deadKeys(initial_value);
+        let send_msg = Message::Send { word: "foo".to_string(), msg_type: "send".to_string() };
         contract.execute_message(send_msg)
             .now_or_never()
             .expect("Send should not panic");
-        let receive_msg = Message::Receive { game_id: "test".to_string(), word: "bar".to_string(), msg_type: "receive".to_string() };
+        let receive_msg = Message::Receive { word: "bar".to_string(), msg_type: "receive".to_string() };
         contract.execute_message(receive_msg)
             .now_or_never()
             .expect("Receive should not panic");
@@ -134,7 +135,7 @@ mod tests {
 
     #[test]
     fn cross_application_call() {
-        let mut contract = create_and_instantiate_DeadKeys(0);
+        let mut contract = create_and_instantiate_deadKeys(0);
         let increment = 8_u64;
         let op = Operation::UpdateScore { game_id: "game2".to_string(), value: increment };
 
@@ -154,7 +155,7 @@ mod tests {
         assert_eq!(stored.unwrap_or_default(), expected_value);
     }
 
-    fn create_and_instantiate_DeadKeys(_initial_value: u64) -> DeadKeysContract {
+    fn create_and_instantiate_deadKeys(_initial_value: u64) -> DeadKeysContract {
         let runtime = ContractRuntime::new().with_application_parameters(());
         let mut contract = DeadKeysContract {
             state: DeadKeysState::load(runtime.root_view_storage_context())

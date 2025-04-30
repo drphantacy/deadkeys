@@ -6,9 +6,8 @@ use std::sync::Arc;
 
 use async_graphql::{EmptySubscription, Object, Request, Response, Schema};
 use linera_sdk::{linera_base_types::WithServiceAbi, views::View, Service, ServiceRuntime};
-use deadkeys::Operation;
+use deadkeys::{Operation, models::LastMessage};
 use linera_sdk::linera_base_types::ChainId;
-
 use self::state::DeadKeysState;
 
 pub struct DeadKeysService {
@@ -70,14 +69,13 @@ impl MutationRoot {
     async fn send_message(
         &self,
         #[graphql(name = "targetChain")] target_chain: String,
-        #[graphql(name = "gameId")] game_id: String,
         word: String,
         #[graphql(name = "msgType")] msg_type: String,
     ) -> String {
         // Parse the target chain ID
         let chain_id: ChainId = target_chain.parse().expect("Invalid ChainId");
         // Schedule the send operation
-        let op = Operation::Send { target_chain: chain_id, game_id: game_id.clone(), word: word.clone(), msg_type: msg_type.clone() };
+        let op = Operation::Send { target_chain: chain_id, word: word.clone(), msg_type: msg_type.clone() };
         self.runtime.schedule_operation(&op);
         // Echo back the message word
         word
@@ -102,6 +100,15 @@ impl QueryRoot {
             .await
             .unwrap_or_default()
             .unwrap_or_default()
+    }
+
+    /// Retrieve the last global message
+    #[graphql(name = "lastMessage")]
+    async fn last_message(&self) -> Option<LastMessage> {
+        match self.state.last_message.get(&"global".to_string()).await {
+            Ok(Some(message)) => Some(message),
+            _ => None,
+        }
     }
 }
 

@@ -10,10 +10,9 @@ interface StartScreenProps {
     statusText?: string;
     chainId?: string;
     incomingMessage?: string;
-    gameId: string;
 }
 
-const StartScreen: React.FC<StartScreenProps> = ({ onStart, onHowTo, onViewLeaderboard, onPVP, disabled, statusText, chainId, incomingMessage, gameId }) => {
+const StartScreen: React.FC<StartScreenProps> = ({ onStart, onHowTo, onViewLeaderboard, onPVP, disabled, statusText, chainId, incomingMessage }) => {
     const mouseOverRef = React.useRef<HTMLAudioElement>(null);
     const welcomeAudioRef = React.useRef<HTMLAudioElement>(null);
 
@@ -130,7 +129,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, onHowTo, onViewLeade
                             try {
                                 const resp = await application.query(
                                     JSON.stringify({
-                                        query: `mutation { sendMessage(targetChain:"${targetChainInput}", gameId:"${gameId}", word:"${messageInput}", msgType:"send") }`,
+                                        query: `mutation { sendMessage(targetChain:"${targetChainInput}", word:"${messageInput}", msgType:"send") }`,
                                     })
                                 );
                                 console.log('sendMessage response:', resp);

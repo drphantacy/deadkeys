@@ -2,6 +2,8 @@ use async_graphql::{Request, Response};
 use linera_sdk::linera_base_types::{ContractAbi, ServiceAbi, ChainId};
 use serde::{Serialize, Deserialize};
 
+pub mod models;
+
 pub struct DeadKeysAbi;
 
 impl ContractAbi for DeadKeysAbi {
@@ -18,12 +20,12 @@ impl ServiceAbi for DeadKeysAbi {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Operation {
     UpdateScore { game_id: String, value: u64 },
-    Send { target_chain: ChainId, game_id: String, word: String, msg_type: String },
+    Send { target_chain: ChainId, word: String, msg_type: String },
 }
 
 /// Cross-chain message payloads: Send/Receive
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Message {
-    Send    { game_id: String, word: String, msg_type: String },
-    Receive { game_id: String, word: String, msg_type: String },
+    Send    { word: String, msg_type: String },
+    Receive { word: String, msg_type: String },
 }

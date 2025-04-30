@@ -22,7 +22,6 @@ const GameStateManager: React.FC = () => {
     const [leaderboard, setLeaderboard] = useLeaderboard();
     const [screenEffect, setScreenEffect] = useState(false); // Track screen flash and shake effect
     const [lastPage, setLastPage] = useState<'start' | 'playing' | 'gameOver'>('start');
-    const [debugScore, setDebugScore] = useState<number>(0);
     const [debugError, setDebugError] = useState<string | null>(null);
     // New state for per-game tracking
     const [gameId, setGameId] = useState<string>(() => globalThis.crypto.randomUUID());
@@ -43,13 +42,22 @@ const GameStateManager: React.FC = () => {
                 console.log("🔔  Reason keys:", Object.keys(note.reason));
                 console.log("🔔  Payload:", note.reason);
                 const reason = note.reason || {} as Record<string, any>;
-                if (reason.NewIncomingMessage) {
-                    (reason.NewIncomingMessage as any[]).forEach((entry: any) => {
-                        console.log('🔔 NewIncomingMessage entry:', entry);
-                        if (entry.value != null) {
-                            setIncomingMessage(entry.value as string);
+                if (reason.NewIncomingBundle) {
+                    try {
+                        const respMsg = await application.query(
+                            JSON.stringify({ query: `query { lastMessage { word type } }` })
+                        );
+                        console.log('🔔 lastMessage response:', respMsg);
+                        const parsedMsg = JSON.parse(respMsg) as any;
+                        if (parsedMsg.data?.lastMessage) {
+                            setIncomingMessage(parsedMsg.data.lastMessage.word);
+                            console.log('🔔 Last message payload:', parsedMsg.data.lastMessage);
+                        } else {
+                            console.log('🔔 No last message');
                         }
-                    });
+                    } catch (err) {
+                        console.error('🔔 lastMessage error', err);
+                    }
                 }
                 if (note.reason.NewBlock) {
                     try {
@@ -137,6 +145,8 @@ const GameStateManager: React.FC = () => {
         setGameState('leaderboard');
     };
 
+    const handlePVPMode = () => setGameState('pvp');
+
     // Onboarding flow handlers
     const handleOnboardingStart = () => {
         localStorage.setItem('seenOnboarding', 'true');
@@ -154,15 +164,15 @@ const GameStateManager: React.FC = () => {
         setShowOnboardingOverlay(true);
     };
 
-    // Compute display text for StartScreen status
+    // Compute display text for StartScreen button based on Linera status
     const statusMap: Record<string, string> = {
-        CreatingWallet: 'Creating Wallet...',
-        RequestingChain: 'Requesting Chain...',
+        Loading: 'Connecting...',
+        'Creating Wallet': 'Creating Wallet...',
+        'Creating Client': 'Creating Client...',
+        'Creating Chain': 'Requesting Chain...',
         Ready: 'Start Game',
     };
-    const statusTextToDisplay = lineraLoading
-        ? 'Connecting...'
-        : statusMap[status] || 'Start Game';
+    const statusTextToDisplay = statusMap[status] || 'Start Game';
 
     return (
         <>
@@ -249,7 +259,7 @@ const GameStateManager: React.FC = () => {
         )}
         {/* Render current screen via lookup */}
             {(() => {
-                const screens: Record<typeof gameState, React.ReactNode> = {
+                const screens = {
                     start: (
                         <>
                           {!isSplitting && (
@@ -265,6 +275,7 @@ const GameStateManager: React.FC = () => {
                                     onStart={handleStart}
                                     onHowTo={handleHowTo}
                                     onViewLeaderboard={handleViewLeaderboard}
+                                    onPVP={handlePVPMode}
                                     disabled={!chainId || lineraLoading}
                                     statusText={statusTextToDisplay}
                                     chainId={chainId}
@@ -313,6 +324,7 @@ const GameStateManager: React.FC = () => {
                                       onStart={handleStart}
                                       onHowTo={handleHowTo}
                                       onViewLeaderboard={handleViewLeaderboard}
+                                      onPVP={handlePVPMode}
                                       disabled={!chainId || lineraLoading}
                                       incomingMessage={incomingMessage}
                                       gameId={gameId}
@@ -330,6 +342,7 @@ const GameStateManager: React.FC = () => {
                                       onStart={handleStart}
                                       onHowTo={handleHowTo}
                                       onViewLeaderboard={handleViewLeaderboard}
+                                      onPVP={handlePVPMode}
                                       disabled={!chainId || lineraLoading}
                                       incomingMessage={incomingMessage}
                                       gameId={gameId}
@@ -388,6 +401,17 @@ const GameStateManager: React.FC = () => {
                             <button onClick={() => setGameState(lastPage)} style={{ marginTop: '10px' }}>
                                 Close
                             </button>
+                        </div>
+                    ),
+                    pvp: (
+                        <div style={{
+                            position: 'fixed', top: 0, left: 0,
+                            width: '100vw', height: '100vh',
+                            backgroundImage: 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url("/images/startscreen.png")',
+                            backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
+                            zIndex: 1002, display: 'flex', justifyContent: 'center', alignItems: 'center'
+                        }}>
+                            <PVPModeScreen chainId={chainId || ''} onClose={() => setGameState('start')} />
                         </div>
                     ),
                 };
