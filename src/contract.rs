@@ -2,7 +2,7 @@
 
 mod state;
 
-use deadkeys::{DeadKeysAbi, Operation, Message, models::LastMessage}; // Import ABI, operations, and messages
+use deadkeys::{DeadKeysAbi, Operation, Message, models::Zombie}; // Import ABI, operations, and messages
 use linera_sdk::{
     linera_base_types::WithContractAbi,
     util::BlockingWait as _,        // For synchronous MapView.get in contract
@@ -76,7 +76,7 @@ impl Contract for DeadKeysContract {
             Message::Send { word, msg_type } | Message::Receive { word, msg_type } => (word, msg_type),
         };
         let r#type = msg_type_str.parse().unwrap_or_default();
-        let last = LastMessage { word, r#type };
+        let last = Zombie { word, r#type };
         self.state.last_message.insert("global", last.clone())
             .expect("Failed to store last_message");
         info!("🔔 Stored last global message: {:?}", last);

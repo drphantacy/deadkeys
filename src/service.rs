@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 use async_graphql::{EmptySubscription, Object, Request, Response, Schema};
 use linera_sdk::{linera_base_types::WithServiceAbi, views::View, Service, ServiceRuntime};
-use deadkeys::{Operation, models::LastMessage};
+use deadkeys::{Operation, models::Zombie};
 use linera_sdk::linera_base_types::ChainId;
 use self::state::DeadKeysState;
 
@@ -103,8 +103,8 @@ impl QueryRoot {
     }
 
     /// Retrieve the last global message
-    #[graphql(name = "lastMessage")]
-    async fn last_message(&self) -> Option<LastMessage> {
+    #[graphql(name = "zombie")]
+    async fn last_message(&self) -> Option<Zombie> {
         match self.state.last_message.get(&"global".to_string()).await {
             Ok(Some(message)) => Some(message),
             _ => None,

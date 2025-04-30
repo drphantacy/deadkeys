@@ -42,21 +42,21 @@ const GameStateManager: React.FC = () => {
                 console.log("🔔  Reason keys:", Object.keys(note.reason));
                 console.log("🔔  Payload:", note.reason);
                 const reason = note.reason || {} as Record<string, any>;
-                if (reason.NewIncomingBundle) {
+                if (reason.NewBlock) {
                     try {
                         const respMsg = await application.query(
-                            JSON.stringify({ query: `query { lastMessage { word type } }` })
+                            JSON.stringify({ query: `query { zombie { word type } }` })
                         );
-                        console.log('🔔 lastMessage response:', respMsg);
+                        console.log('🔔 message response:', respMsg);
                         const parsedMsg = JSON.parse(respMsg) as any;
-                        if (parsedMsg.data?.lastMessage) {
-                            setIncomingMessage(parsedMsg.data.lastMessage.word);
-                            console.log('🔔 Last message payload:', parsedMsg.data.lastMessage);
+                        if (parsedMsg.data?.zombie) {
+                            setIncomingMessage(parsedMsg.data.zombie.word);
+                            console.log('🔔 Last message payload:', parsedMsg.data.zombie);
                         } else {
-                            console.log('🔔 No last message');
+                            console.log('🔔 No last zombie');
                         }
                     } catch (err) {
-                        console.error('🔔 lastMessage error', err);
+                        console.error('🔔 Zombie error', err);
                     }
                 }
                 if (note.reason.NewBlock) {
