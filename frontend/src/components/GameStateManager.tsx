@@ -33,6 +33,7 @@ const GameStateManager: React.FC = () => {
     const [incomingMessageType, setIncomingMessageType] = useState<number | null>(null);
     const [isPVPGame, setIsPVPGame] = useState<boolean>(false);
     const [friendChainId, setFriendChainId] = useState<string>('');
+    const [friendScore, setFriendScore] = useState<number | null>(null);
 
     useEffect(() => {
         console.log('GameStateManager - chainId from context:', chainId);
@@ -82,37 +83,16 @@ const GameStateManager: React.FC = () => {
         }
     }, [lineraLoading, application, client, gameId]);
 
-    // useEffect(() => {
-    //     if (!client) return;
-    //     client.onNotification((note: any) => {
-    //         console.log('🔔 Notification:', note);
-    //         if (note.reason.NewBlock) {
-    //             console.log('🔔 Notification:', note.reason.NewBlock);
-    //         }
-    //         // Extract and inspect the reason object
-    //         const reason = (note.reason ?? {}) as Record<string, any>;
-    //         console.log('🔔 Reason keys:', Object.keys(reason));
-    //         // Iterate through each variant payload
-    //         Object.keys(reason).forEach(key => {
-    //             const payload = reason[key];
-    //             console.log(`🔔 reason[${key}]:`, payload);
-    //             if (Array.isArray(payload)) {
-    //                 payload.forEach((entry: any) => {
-    //                     if (entry && entry.data != null) {
-    //                         console.log(`✨ Data in ${key}:`, entry.data);
-    //                         setIncomingMessage(entry.data as string);
-    //                     }
-    //                 });
-    //             } else if (payload && payload.data != null) {
-    //                 console.log(`✨ Data in ${key}:`, payload.data);
-    //                 setIncomingMessage(payload.data as string);
-    //             }
-    //         });
-    //     });
-    // }, [client]);
+    useEffect(() => {
+        if (incomingMessageType === 6) {
+            const fs = parseInt(incomingMessage, 10);
+            setFriendScore(isNaN(fs) ? 0 : fs);
+        }
+    }, [incomingMessageType, incomingMessage]);
 
     // Common start logic (called by normal or PVP start)
     const _startGame = (isPVP: boolean, friendId?: string) => {
+        setFriendScore(null);
         setIsPVPGame(isPVP);
         setFriendChainId(friendId || '');
         setIsSplitting(true);
@@ -132,7 +112,16 @@ const GameStateManager: React.FC = () => {
     const handleStartPVP = (friendId: string) => _startGame(true, friendId);
 
     const handleGameOver = async () => {
-        // Update score logic needs to be implemented using Linera client
+        // send final score to opponent in PVP
+        if (isPVPGame && application && friendChainId) {
+            try {
+                await application.query(
+                    JSON.stringify({ query: `mutation { sendMessage(targetChain:"${friendChainId}", word:"${score}", msgType:"6") }` })
+                );
+            } catch (err) {
+                console.error('sendMessage error', err);
+            }
+        }
         setGameState('gameOver');
     };
 
@@ -142,6 +131,7 @@ const GameStateManager: React.FC = () => {
         setGameId(newGameId);
         setScore(0);
         setChainScore(0);
+        setFriendScore(null);
         setBestWpm(0);
         setGameState('start');
     };
@@ -398,7 +388,7 @@ const GameStateManager: React.FC = () => {
                                 }
                             }}
                             onZombieReachBottom={triggerScreenEffect}
-                            onWpmUpdate={setBestWpm}
+                            onWpmUpdate={(wpm) => setBestWpm(prev => Math.max(prev, wpm))}
                             screenEffect={screenEffect}
                             pvpMode={isPVPGame}
                             friendChainId={friendChainId}
@@ -406,7 +396,29 @@ const GameStateManager: React.FC = () => {
                             remoteType={incomingMessageType}
                         />
                     ),
-                    gameOver: (
+                    gameOver: isPVPGame ? (
+                        <div style={{
+                            position: 'fixed', top: 0, left: 0,
+                            width: '100vw', height: '100vh',
+                            backgroundImage: 'url("/images/gameover.png")',
+                            backgroundSize: 'cover', backgroundPosition: 'center',
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                            fontFamily: '"Press Start 2P", monospace', color: 'yellow', textAlign: 'center', zIndex: 4000
+                        }}>
+                            <h1 style={{ fontSize: '48px', margin: '20px' }}>
+                                {friendScore !== null && friendScore > score ? 'You Lose!' : 'You Win!'}
+                            </h1>
+                            <p style={{ fontSize: '24px', margin: '10px' }}>Your Score: {score}</p>
+                            <p style={{ fontSize: '24px', margin: '10px', color: 'purple' }}>Friend's Score: {friendScore ?? 0}</p>
+                            <button onClick={handleRestart} style={{
+                                fontFamily: '"Press Start 2P", monospace', fontSize: '20px', color: 'yellow',
+                                background: 'transparent', border: '2px solid yellow', padding: '10px 20px', cursor: 'pointer',
+                                imageRendering: 'pixelated', outline: 'none', marginTop: '20px'
+                            }}>
+                                Try Again
+                            </button>
+                        </div>
+                    ) : (
                         <GameOver score={chainScore} wpm={bestWpm} onRestart={handleRestart} />
                     ),
                     leaderboard: (

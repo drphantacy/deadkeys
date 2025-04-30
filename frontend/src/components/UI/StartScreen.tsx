@@ -100,6 +100,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, onHowTo, onViewLeade
                         padding: '10px 20px',
                         imageRendering: 'pixelated',
                         outline: 'none',
+                        cursor: 'pointer',
                         margin: '10px',
                     }}
                 >

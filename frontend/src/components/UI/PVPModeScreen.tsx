@@ -47,10 +47,8 @@ const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose, incomin
       alignItems: 'center',
       justifyContent: 'center',
       padding: '20px',
-      width: '500px',
-      maxWidth: '100%',
-      background: 'transparent',
-      borderRadius: '8px',
+      fontFamily: '"Press Start 2P", monospace',
+      textAlign: 'center',
     }}>
       <button onClick={onClose} style={{
         position: 'absolute', top: '16px', right: '16px',
@@ -60,18 +58,21 @@ const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose, incomin
         outline: 'none', imageRendering: 'pixelated', cursor: 'pointer', zIndex: 1003
       }}>Close</button>
     
-      <h1 style={{ 
-          margin: '40px 0 64px 0', 
-          fontSize: 48, 
-          textShadow: '2px 4px 8px #000, 0 2px 0 #222',
+      <h1 style={{
+        fontFamily: '"Press Start 2P", monospace',
+        fontSize: '36px',
+        margin: '20px 0',
+        textShadow: '2px 4px 8px #000',
       }}>PVP Mode</h1>
       
       <p style={{
-        fontFamily: '"Press Start 2P", monospace',
-        fontSize: '14px',
-        color: '#FFD600',
+        width: '100%',
         textAlign: 'center',
-        marginBottom: '24px',
+        color: 'yellow',
+        fontFamily: '"Press Start 2P", monospace',
+        fontSize: '20px',
+        textShadow: '2px 2px 4px #000',
+        margin: '20px 0',
       }}>
         Each zombie you kill will be sent to your opponent, highest score wins!
         Opponent's Zombie word will be in Purple colour.
@@ -174,11 +175,11 @@ const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose, incomin
 
 const buttonStyle: React.CSSProperties = {
   fontFamily: '"Press Start 2P", monospace',
-  fontSize: '16px',
+  fontSize: '20px',
   color: 'yellow',
   background: 'transparent',
   border: '2px solid yellow',
-  padding: '8px 16px',
+  padding: '10px 20px',
   cursor: 'pointer',
   imageRendering: 'pixelated',
   outline: 'none',
