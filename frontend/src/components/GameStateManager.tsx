@@ -14,9 +14,7 @@ const GameStateManager: React.FC = () => {
     const [gameState, setGameState] = useState<'start' | 'playing' | 'gameOver' | 'leaderboard' | 'pvp'>('start');
 
     // Overlay flag for onboarding tutorial
-    const [showOnboardingOverlay, setShowOnboardingOverlay] = useState(
-        !Boolean(localStorage.getItem('seenOnboarding'))
-    );
+    const [showOnboardingOverlay, setShowOnboardingOverlay] = useState(false);
 
     const [score, setScore] = useState(0);
     const [leaderboard, setLeaderboard] = useLeaderboard();
