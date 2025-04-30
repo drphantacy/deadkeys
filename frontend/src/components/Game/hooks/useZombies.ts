@@ -36,7 +36,7 @@ const useZombies = (
                         ...prev,
                         (() => {
                             // Only spawn zombies initially, then include mummies and bats
-                            if (zombieKillCountRef.current < 5) {
+                            if (zombieKillCountRef.current < 3) {
                                 return {
                                     id: now,
                                     word: newWord,

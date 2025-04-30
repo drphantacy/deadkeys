@@ -72,7 +72,7 @@ const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose, incomin
         textAlign: 'center',
         color: 'white',
         fontFamily: '"Press Start 2P", monospace',
-        fontSize: '20px',
+        fontSize: '14px',
         textShadow: '2px 2px 4px #000',
         margin: '20px 0',
       }}>
@@ -84,7 +84,7 @@ const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose, incomin
         textAlign: 'center',
         color: 'white',
         fontFamily: '"Press Start 2P", monospace',
-        fontSize: '20px',
+        fontSize: '14px',
         textShadow: '2px 2px 4px #000',
         margin: '0 0 60px',
       }}>Opponent's Zombie word will be in Purple colour.</p>
@@ -108,14 +108,14 @@ const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose, incomin
           </div>
           <div style={{
               margin: '0 auto 0 auto',
-              fontSize: 16,
+              fontSize: 14,
               color: '#aaa',
               letterSpacing: 1,
               textAlign: 'center',
               opacity: 0.85,
               lineHeight: '1.8',
               wordBreak: 'break-all',
-              maxWidth: 500,
+              maxWidth: 600,
               background: 'rgba(255,255,255,0.05)',
               border: '1px solid rgba(255,255,255,0.13)',
               borderRadius: 8,
@@ -123,12 +123,24 @@ const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose, incomin
               boxSizing: 'border-box',
           }}>
               {chainId}
-          </div>
-          {incomingType === 0 && (
-            <div style={{ fontFamily: '"Press Start 2P", monospace', color: 'purple', marginBottom: '12px' }}>
+
+              {incomingType === 0 && (
+            <div>
+              <div style={{
+              margin: '10px auto',
+              fontSize: 16,
+              color: 'yellow',
+          }}>
+              VS
+            </div>
+
+            <div>
               {incomingMessage}
             </div>
+              </div>
           )}
+          </div>
+          
           
           <div style={{ display: 'flex', gap: '16px', marginTop: '26px' }}>
             {canStart && (
@@ -169,12 +181,12 @@ const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose, incomin
             disabled={isJoining}
           />
           {isJoining ? (
-            <div style={{ display: 'flex', gap: '16px', marginTop: '26px', alignItems: 'center' }}>
-              {incomingType === 0 && incomingMessage && (
-                <div style={{ fontFamily: '"Press Start 2P", monospace', color: 'white' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '26px', alignItems: 'center' }}>
+              
+                <div style={{ fontFamily: '"Press Start 2P", monospace', color: 'white', opacity: 0.5, marginBottom: '16px' }}>
                   Waiting for Host{dots}
                 </div>
-              )}
+             
               <button onClick={() => setIsJoining(false)} style={buttonStyle}>Cancel</button>
             </div>
           ) : (
