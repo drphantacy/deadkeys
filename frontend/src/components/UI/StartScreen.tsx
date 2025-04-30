@@ -83,7 +83,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, onHowTo, onViewLeade
                         margin: '10px',
                     }}
                 >
-                    {statusText || 'Start Game'}
+                    {statusText || 'Solo Game'}
                 </button>
                 <button
                     className="start-btn"
@@ -118,7 +118,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, onHowTo, onViewLeade
                     }}>
                         How to Play
                     </button>
-                    <button
+                    {/* <button
                         disabled={disabled}
                         onClick={async () => {
                             if (!application || !targetChainInput) {
@@ -157,7 +157,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, onHowTo, onViewLeade
                         }}
                     >
                         Test Message
-                    </button>
+                    </button> 
                     <input
                         type="text"
                         value={targetChainInput}
@@ -182,11 +182,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, onHowTo, onViewLeade
                             {testMessage}
                         </div>
                     )}
-                    {refreshMessage && (
-                        <div style={{ marginTop: '8px', color: 'lime', fontSize: '14px' }}>
-                            {refreshMessage}
-                        </div>
-                    )}
+                        */}
                     {chainId && (
                         <div style={{
                             margin: '40px auto 0 auto',

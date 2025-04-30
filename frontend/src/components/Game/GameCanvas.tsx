@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useLinera } from '../../linera/LineraProvider';
 import useTimer from './hooks/useTimer';
 import useZombies from './hooks/useZombies';
 import Zombie from './Zombie';
@@ -12,9 +13,16 @@ interface GameCanvasProps {
     onWpmUpdate?: (wpm: number) => void;
     screenEffect: boolean;
     pvpMode: boolean;
+    /** opponent's chain id */
+    friendChainId?: string;
+    /** remote spawn word */
+    remoteWord?: string;
+    /** remote spawn type */
+    remoteType?: number | null;
 }
 
-const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZombieReachBottom, onWpmUpdate, screenEffect, pvpMode }) => {
+const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZombieReachBottom, onWpmUpdate, screenEffect, pvpMode, friendChainId, remoteWord, remoteType }) => {
+    const { application } = useLinera();
     const [playerInput, setPlayerInput] = useState('');
     const [health, setHealth] = useState(3);
     const [score, setScore] = useState(0); // Score state
@@ -29,11 +37,12 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZo
     const zombieDieRef = useRef<HTMLAudioElement | null>(null);
     const attackRef = useRef<HTMLAudioElement | null>(null);
     const inputRef = useRef<HTMLInputElement | null>(null); // Ref for the input box
+    const spawnedRemoteWords = useRef<Set<string>>(new Set()); // track already spawned remote words
 
     const { timeLeft } = useTimer(60, onGameOver); // Use timeLeft from the hook
     // Dynamic timer color based on remaining time
     const timerColor = timeLeft > 40 ? 'lime' : timeLeft > 15 ? 'yellow' : 'red';
-    const { zombies, handleZombieHit } = useZombies(onGameOver, onZombieReachBottom, setHealth, restartSignal); // Use zombies from the hook
+    const { zombies, handleZombieHit, spawnRemote } = useZombies(onGameOver, onZombieReachBottom, setHealth, restartSignal); // Use zombies from the hook
 
     useEffect(() => {
         initializeWordLibrary(); // Initialize the word library before the game starts
@@ -71,10 +80,21 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZo
         }
     }, [screenEffect]);
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // spawn remote zombies on incoming PVP messages
+    useEffect(() => {
+        if (pvpMode && remoteWord && remoteType != null && remoteType != 0 && remoteType != 5) {
+            if (!spawnedRemoteWords.current.has(remoteWord)) {
+                spawnedRemoteWords.current.add(remoteWord);
+                const typeMap: Record<number, 'zombie'|'mummy'|'bat'> = {1:'zombie',2:'mummy',3:'bat'};
+                spawnRemote(remoteWord, typeMap[remoteType]);
+            }
+        }
+    }, [pvpMode, remoteWord, remoteType, spawnRemote]);
+
+    const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const input = e.target.value;
         setPlayerInput(input);
-        const killType = handleZombieHit(
+        const killed = handleZombieHit(
             input,
             () => setPlayerInput(''),
             (points) => {
@@ -93,9 +113,23 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZo
             gunSoundRef.current.currentTime = 0;
             gunSoundRef.current.play();
         }
-        if (killType === 'bat') batDieRef.current?.play();
-        else if (killType === 'mummy') mummyDieRef.current?.play();
-        else if (killType === 'zombie') zombieDieRef.current?.play();
+
+        // send kill to opponent if in PVP mode and local kill
+        if (killed && !killed.remote && pvpMode && application && friendChainId) {
+            const typeNum = killed.type === 'zombie' ? 1 : killed.type === 'mummy' ? 2 : 3;
+            try {
+                await application.query(
+                    JSON.stringify({ query: `mutation { sendMessage(targetChain:"${friendChainId}", word:"${killed.word}", msgType:"${typeNum}") }` })
+                );
+            } catch (err) {
+                console.error('sendMessage error', err);
+            }
+        }
+
+        // play kill animation sound
+        if (killed?.type === 'bat') batDieRef.current?.play();
+        else if (killed?.type === 'mummy') mummyDieRef.current?.play();
+        else if (killed?.type === 'zombie') zombieDieRef.current?.play();
     };
 
     const restartGame = () => {

@@ -32,6 +32,7 @@ const GameStateManager: React.FC = () => {
     const [incomingMessage, setIncomingMessage] = useState<string>('');
     const [incomingMessageType, setIncomingMessageType] = useState<number | null>(null);
     const [isPVPGame, setIsPVPGame] = useState<boolean>(false);
+    const [friendChainId, setFriendChainId] = useState<string>('');
 
     useEffect(() => {
         console.log('GameStateManager - chainId from context:', chainId);
@@ -110,8 +111,10 @@ const GameStateManager: React.FC = () => {
     //     });
     // }, [client]);
 
-    const handleStart = (pvp: boolean = false) => {
-        setIsPVPGame(pvp);
+    // Common start logic (called by normal or PVP start)
+    const _startGame = (isPVP: boolean, friendId?: string) => {
+        setIsPVPGame(isPVP);
+        setFriendChainId(friendId || '');
         setIsSplitting(true);
         setTimeout(() => {
             setIsSplitting(false);
@@ -121,6 +124,12 @@ const GameStateManager: React.FC = () => {
             setBestWpm(0);
         }, 2000);
     };
+
+    // Normal start
+    const handleStart = () => _startGame(false);
+
+    // PVP start with friend chain id
+    const handleStartPVP = (friendId: string) => _startGame(true, friendId);
 
     const handleGameOver = async () => {
         // Update score logic needs to be implemented using Linera client
@@ -174,9 +183,9 @@ const GameStateManager: React.FC = () => {
         'Creating Wallet': 'Creating Wallet...',
         'Creating Client': 'Creating Client...',
         'Creating Chain': 'Requesting Chain...',
-        Ready: 'Start Game',
+        Ready: 'Solo Game',
     };
-    const statusTextToDisplay = statusMap[status] || 'Start Game';
+    const statusTextToDisplay = statusMap[status] || 'Solo Game';
 
     return (
         <>
@@ -284,7 +293,6 @@ const GameStateManager: React.FC = () => {
                                     statusText={statusTextToDisplay}
                                     chainId={chainId}
                                     incomingMessage={incomingMessage}
-                                    gameId={gameId}
                                 />
                                 {/* Linera branding on start screen */}
                                 <div style={{
@@ -331,7 +339,6 @@ const GameStateManager: React.FC = () => {
                                       onPVP={handlePVPMode}
                                       disabled={!chainId || lineraLoading}
                                       incomingMessage={incomingMessage}
-                                      gameId={gameId}
                                   />
                                 </div>
                                 <div style={{
@@ -349,7 +356,6 @@ const GameStateManager: React.FC = () => {
                                       onPVP={handlePVPMode}
                                       disabled={!chainId || lineraLoading}
                                       incomingMessage={incomingMessage}
-                                      gameId={gameId}
                                   />
                                 </div>
                                 <img
@@ -395,6 +401,9 @@ const GameStateManager: React.FC = () => {
                             onWpmUpdate={setBestWpm}
                             screenEffect={screenEffect}
                             pvpMode={isPVPGame}
+                            friendChainId={friendChainId}
+                            remoteWord={incomingMessage}
+                            remoteType={incomingMessageType}
                         />
                     ),
                     gameOver: (
@@ -421,7 +430,7 @@ const GameStateManager: React.FC = () => {
                               onClose={() => setGameState('start')}
                               incomingMessage={incomingMessage}
                               incomingType={incomingMessageType ?? -1}
-                              onStart={() => handleStart(true)}
+                              onStart={handleStartPVP}
                             />
                         </div>
                     ),

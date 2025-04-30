@@ -6,7 +6,7 @@ interface PVPModeScreenProps {
   onClose: () => void;
   incomingMessage: string;
   incomingType: number;
-  onStart: () => void;
+  onStart: (friendChainId: string) => void;
 }
 
 const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose, incomingMessage, incomingType, onStart }) => {
@@ -35,9 +35,9 @@ const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose, incomin
       setCanStart(true);
     }
     if (mode === 'joining' && incomingType === 5) {
-      onStart();
+      onStart(friendId);
     }
-  }, [incomingType, mode, incomingMessage, onStart]);
+  }, [incomingType, mode, incomingMessage, friendId, onStart]);
 
   return (
     <div style={{
@@ -47,8 +47,8 @@ const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose, incomin
       alignItems: 'center',
       justifyContent: 'center',
       padding: '20px',
-      width: '400px',
-      maxWidth: '90%',
+      width: '500px',
+      maxWidth: '100%',
       background: 'transparent',
       borderRadius: '8px',
     }}>
@@ -59,12 +59,13 @@ const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose, incomin
         color: 'yellow', background: 'transparent', border: '1px solid yellow',
         outline: 'none', imageRendering: 'pixelated', cursor: 'pointer', zIndex: 1003
       }}>Close</button>
-      <h1 style={{
-        fontFamily: '"Press Start 2P", monospace',
-        fontSize: '32px',
-        color: 'yellow',
-        marginBottom: '16px',
+    
+      <h1 style={{ 
+          margin: '40px 0 64px 0', 
+          fontSize: 48, 
+          textShadow: '2px 4px 8px #000, 0 2px 0 #222',
       }}>PVP Mode</h1>
+      
       <p style={{
         fontFamily: '"Press Start 2P", monospace',
         fontSize: '14px',
@@ -116,7 +117,7 @@ const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose, incomin
               } catch (err) {
                 console.error('sendMessage error', err);
               }
-              onStart();
+              onStart(friendId);
             }}
             style={buttonStyle}
             disabled={!canStart}

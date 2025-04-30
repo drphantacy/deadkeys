@@ -4,6 +4,7 @@ let wordLibrary: string[] = [];
 // Generate 80 random crypto-related words from a pool of 200 words
 export const initializeWordLibrary = () => {
     const cryptoWords = [
+        'linera', 'chainId', 'application', 'query', 'mutation', 'message', 'epoch', 'account', 'validator', 'p2p', 'persistence',
         'bitcoin', 'ethereum', 'blockchain', 'wallet', 'mining', 'token', 'altcoin', 'ledger', 'hash', 'smart contract',
         'decentralized', 'crypto', 'fiat', 'exchange', 'staking', 'gas', 'nft', 'defi', 'hodl', 'fomo',
         'whale', 'airdrop', 'fork', 'dapp', 'metaverse', 'dao', 'stablecoin', 'yield', 'liquidity', 'protocol',

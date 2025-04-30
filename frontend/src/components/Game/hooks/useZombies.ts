@@ -137,7 +137,7 @@ const useZombies = (
         return () => clearInterval(moveInterval); // Cleanup interval on unmount
     }, [onGameOver, onZombieReachBottom, setHealth]);
 
-    const handleZombieHit = (input: string, resetInput: () => void, onScoreUpdate: (points: number) => void, onWpmUpdate?: (wpm: number) => void): string | void => {
+    const handleZombieHit = (input: string, resetInput: () => void, onScoreUpdate: (points: number) => void, onWpmUpdate?: (wpm: number) => void): Enemy | void => {
         const matchingZombie = zombies.find((z) => z.word.startsWith(input)); // Compare input including spaces
         if (matchingZombie) {
             const progress = (input.length / matchingZombie.word.length) * 100;
@@ -176,12 +176,36 @@ const useZombies = (
                 // Defer WPM update if provided
                 if (onWpmUpdate) setTimeout(() => onWpmUpdate(wpm), 0);
                 resetInput();
-                return matchingZombie.type;
+                return matchingZombie;
             }
         }
     };
 
-    return { zombies, handleZombieHit };
+    const spawnRemote = (word: string, type: 'zombie' | 'mummy' | 'bat') => {
+        const now = Date.now();
+        // Random horizontal position
+        const left = 10 + Math.random() * 80;
+        // Speed based on type
+        const speed = type === 'zombie' ? 1 : type === 'mummy' ? 2 : 3;
+        // Add remote enemy
+        setZombies((prev) => [
+            ...prev,
+            {
+                id: now,
+                word,
+                position: 0,
+                left,
+                health: 100,
+                spawnTime: now,
+                type,
+                speed,
+                // mark remote if needed
+                remote: true,
+            },
+        ]);
+    };
+
+    return { zombies, handleZombieHit, spawnRemote };
 };
 
 export default useZombies;

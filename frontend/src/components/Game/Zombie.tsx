@@ -153,7 +153,7 @@ const Zombie: React.FC<ZombieProps> = ({ zombie, isAttacked }) => {
                         style={{
                             fontFamily: 'monospace',
                             fontSize: 14,
-                            background: 'rgba(0,0,0,0.7)',
+                            background: zombie.remote ? 'purple' : 'rgba(0,0,0,0.7)',
                             color: '#fff',
                             border: '2px solid #222',
                             borderRadius: 4,

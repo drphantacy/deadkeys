@@ -5,6 +5,8 @@ interface EnemyBase {
     left: number;
     health: number;
     spawnTime: number;
+    /** Indicates if spawned from remote PVP message */
+    remote?: boolean;
 }
 
 export interface Zombie extends EnemyBase {
