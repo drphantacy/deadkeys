@@ -79,7 +79,8 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, onHowTo, onViewLeade
                         cursor: disabled ? 'not-allowed' : 'pointer',
                         opacity: disabled ? 0.5 : 1,
                         imageRendering: 'pixelated',
-                        outline: 'none'
+                        outline: 'none',
+                        margin: '10px',
                     }}
                 >
                     {statusText || 'Start Game'}
@@ -97,16 +98,14 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, onHowTo, onViewLeade
                         background: 'transparent',
                         border: '2px solid yellow',
                         padding: '10px 20px',
-                        // cursor: disabled ? 'not-allowed' : 'pointer',
-                        // opacity: disabled ? 0.5 : 1,
                         imageRendering: 'pixelated',
                         outline: 'none',
-                        marginTop: '10px'
+                        margin: '10px',
                     }}
                 >
                     PVP Mode
                 </button>
-                <div style={{ marginTop: '20px' }}>
+                <div style={{ marginTop: '10px' }}>
                     <button onClick={onHowTo} style={{
                         fontFamily: '"Press Start 2P", monospace',
                         background: 'transparent',

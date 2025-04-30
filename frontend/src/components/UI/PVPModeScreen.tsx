@@ -1,17 +1,24 @@
 import React, { useState, useEffect } from 'react';
+import { useLinera } from '../../linera/LineraProvider';
 
 interface PVPModeScreenProps {
   chainId: string;
   onClose: () => void;
+  incomingMessage: string;
+  incomingType: number;
+  onStart: () => void;
 }
 
-const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose }) => {
+const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose, incomingMessage, incomingType, onStart }) => {
+  const { application } = useLinera();
   const [mode, setMode] = useState<'initial' | 'hosting' | 'joining'>('initial');
   const [friendId, setFriendId] = useState<string>('');
   const [dots, setDots] = useState<string>('');
+  const [isJoining, setIsJoining] = useState<boolean>(false);
+  const [canStart, setCanStart] = useState<boolean>(false);
 
   useEffect(() => {
-    if (mode === 'hosting') {
+    if (mode === 'hosting' || (mode === 'joining' && isJoining)) {
       const interval = setInterval(() => {
         setDots(prev => (prev.length >= 3 ? '' : prev + '.'));
       }, 500);
@@ -19,7 +26,18 @@ const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose }) => {
     } else {
       setDots('');
     }
-  }, [mode]);
+  }, [mode, isJoining]);
+
+  // Handle inbound PVP messages for host and join
+  useEffect(() => {
+    if (mode === 'hosting' && incomingType === 0 && incomingMessage) {
+      setFriendId(incomingMessage);
+      setCanStart(true);
+    }
+    if (mode === 'joining' && incomingType === 5) {
+      onStart();
+    }
+  }, [incomingType, mode, incomingMessage, onStart]);
 
   return (
     <div style={{
@@ -55,6 +73,7 @@ const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose }) => {
         marginBottom: '24px',
       }}>
         Each zombie you kill will be sent to your opponent, highest score wins!
+        Opponent's Zombie word will be in Purple colour.
       </p>
 
       {mode === 'initial' && (
@@ -66,15 +85,13 @@ const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose }) => {
 
       {mode === 'hosting' && (
         <>
-          <div style={{ fontFamily: '"Press Start 2P", monospace', color: 'white', marginBottom: '8px' }}>
-            Waiting{dots}
-          </div>
+        
           <div style={{
             fontFamily: '"Press Start 2P", monospace',
             color: 'white',
             marginBottom: '8px',
           }}>
-            Share your chain id with your friend:
+            {canStart ? 'Friend has joined. Let\'s start!' : 'Share your chain id with your friend:'}
           </div>
           <div style={{
             fontFamily: '"Press Start 2P", monospace',
@@ -83,6 +100,29 @@ const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose }) => {
           }}>
             {chainId}
           </div>
+          {incomingType === 0 && (
+            <div style={{ fontFamily: '"Press Start 2P", monospace', color: 'purple', marginBottom: '12px' }}>
+              {incomingMessage}
+            </div>
+          )}
+          
+          <button
+            onClick={async () => {
+              if (!application) return console.error('Linera app not ready');
+              try {
+                await application.query(
+                  JSON.stringify({ query: `mutation { sendMessage(targetChain:"${friendId}", word:"${chainId}", msgType:"5") }` })
+                );
+              } catch (err) {
+                console.error('sendMessage error', err);
+              }
+              onStart();
+            }}
+            style={buttonStyle}
+            disabled={!canStart}
+          >
+            Start Game
+          </button>
           <button onClick={() => setMode('initial')} style={buttonStyle}>Back</button>
         </>
       )}
@@ -95,9 +135,36 @@ const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose }) => {
             value={friendId}
             onChange={e => setFriendId(e.target.value)}
             style={inputStyle}
+            disabled={isJoining}
           />
-          <button onClick={() => { /* join logic */ }} style={buttonStyle}>Enter</button>
-          <button onClick={() => setMode('initial')} style={buttonStyle}>Back</button>
+          {isJoining ? (
+            <>
+             {incomingType === 0 && incomingMessage && (
+              <div style={{ fontFamily: '"Press Start 2P", monospace', color: 'white', marginBottom: '8px' }}>
+                Waiting for Host{dots}
+              </div>
+            )}
+              <button onClick={() => setIsJoining(false)} style={buttonStyle}>Cancel</button>
+            </>
+          ) : (
+            <>
+              <button onClick={async () => {
+                setIsJoining(true);
+                if (!application) {
+                  console.error('Linera application not ready');
+                  return;
+                }
+                try {
+                  await application.query(
+                    JSON.stringify({ query: `mutation { sendMessage(targetChain:"${friendId}", word:"${chainId}", msgType:"0") }` })
+                  );
+                } catch (err) {
+                  console.error('sendMessage error', err);
+                }
+              }} style={buttonStyle}>Enter</button>
+              <button onClick={() => setMode('initial')} style={buttonStyle}>Back</button>
+            </>
+          )}
         </>
       )}
     </div>

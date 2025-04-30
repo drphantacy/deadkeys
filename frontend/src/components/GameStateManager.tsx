@@ -30,6 +30,7 @@ const GameStateManager: React.FC = () => {
     const [isSplitting, setIsSplitting] = useState<boolean>(false);
     const { client, application, chainId, loading: lineraLoading, status, error: lineraError } = useLinera();
     const [incomingMessage, setIncomingMessage] = useState<string>('');
+    const [incomingMessageType, setIncomingMessageType] = useState<number | null>(null);
 
     useEffect(() => {
         console.log('GameStateManager - chainId from context:', chainId);
@@ -51,6 +52,7 @@ const GameStateManager: React.FC = () => {
                         const parsedMsg = JSON.parse(respMsg) as any;
                         if (parsedMsg.data?.zombie) {
                             setIncomingMessage(parsedMsg.data.zombie.word);
+                            setIncomingMessageType(parsedMsg.data.zombie.type);
                             console.log('🔔 Last message payload:', parsedMsg.data.zombie);
                         } else {
                             console.log('🔔 No last zombie');
@@ -411,7 +413,13 @@ const GameStateManager: React.FC = () => {
                             backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
                             zIndex: 1002, display: 'flex', justifyContent: 'center', alignItems: 'center'
                         }}>
-                            <PVPModeScreen chainId={chainId || ''} onClose={() => setGameState('start')} />
+                            <PVPModeScreen
+                              chainId={chainId || ''}
+                              onClose={() => setGameState('start')}
+                              incomingMessage={incomingMessage}
+                              incomingType={incomingMessageType ?? -1}
+                              onStart={handleStart}
+                            />
                         </div>
                     ),
                 };
