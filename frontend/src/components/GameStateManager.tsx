@@ -425,7 +425,7 @@ const GameStateManager: React.FC = () => {
                             </button>
                         </div>
                     ) : (
-                        <GameOver score={chainScore} wpm={bestWpm} onRestart={handleRestart} />
+                        <GameOver score={score} wpm={bestWpm} onRestart={handleRestart} />
                     ),
                     leaderboard: (
                         <div className="leaderboard-screen">
