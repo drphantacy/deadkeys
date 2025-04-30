@@ -4,7 +4,7 @@ let wordLibrary: string[] = [];
 // Generate 80 random crypto-related words from a pool of 200 words
 export const initializeWordLibrary = () => {
     const cryptoWords = [
-        'linera', 'microchains', 'cross-chain message', 'faucet', 'bytecode', 'quorum', 'epoch', 'account', 'validator', 'webassembly', 'single-owner chain', 'mathieu baudet', 'james kay', 'wilt0n', 'zhao kkk', 'hasto', 'afck', 'lpaydat', 'bitcoin', 'ethereum', 'blockchain', 'wallet', 'mining', 'token', 'altcoin', 'ledger', 'hash', 'smart contract',
+        'linera', 'microchains', 'cross-chain message', 'faucet', 'bytecode', 'quorum', 'epoch', 'account', 'validator', 'webassembly', 'single-owner chain', 'mathieu baudet', 'james kay', 'wilt0n', 'zhao kkk', 'hasto', 'afck', 'dannygreene', 'lpaydat', 'bitcoin', 'ethereum', 'blockchain', 'wallet', 'mining', 'token', 'altcoin', 'ledger', 'hash', 'smart contract', 
         'decentralized', 'crypto', 'fiat', 'exchange', 'staking', 'gas', 'nft', 'defi', 'hodl', 'fomo',
         'whale', 'airdrop', 'fork', 'dapp', 'metaverse', 'dao', 'stablecoin', 'yield', 'liquidity', 'protocol',
         'scalability', 'consensus', 'validator', 'sharding', 'proof', 'stake', 'work', 'burn', 'satoshi', 'halving',
