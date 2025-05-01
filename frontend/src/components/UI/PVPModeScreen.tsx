@@ -73,6 +73,7 @@ const PVPModeScreen: React.FC<PVPModeScreenProps> = ({ chainId, onClose, incomin
         color: 'white',
         fontFamily: '"Press Start 2P", monospace',
         fontSize: '14px',
+        lineHeight: '1.5em',
         textShadow: '2px 2px 4px #000',
         margin: '20px 0',
       }}>

@@ -85,8 +85,12 @@ const GameStateManager: React.FC = () => {
         if (incomingMessageType === 6) {
             const fs = parseInt(incomingMessage, 10);
             setFriendScore(isNaN(fs) ? 0 : fs);
+            // Opponent ended game; if we're still playing, end our game and send final score
+            if (isPVPGame && gameState === 'playing') {
+                handleGameOver();
+            }
         }
-    }, [incomingMessageType, incomingMessage]);
+    }, [incomingMessageType, incomingMessage, isPVPGame, gameState]);
 
     // Common start logic (called by normal or PVP start)
     const _startGame = (isPVP: boolean, friendId?: string) => {
@@ -411,11 +415,20 @@ const GameStateManager: React.FC = () => {
                             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                             fontFamily: '"Press Start 2P", monospace', color: 'yellow', textAlign: 'center', zIndex: 4000
                         }}>
-                            <h1 style={{ fontSize: '48px', margin: '20px' }}>
-                                {friendScore !== null && friendScore > score ? 'You Lose!' : 'You Win!'}
-                            </h1>
-                            <p style={{ fontSize: '24px', margin: '10px' }}>Your Score: {score}</p>
-                            <p style={{ fontSize: '24px', margin: '10px', color: 'white' }}>Friend's Score: {friendScore ?? 0}</p>
+                            {friendScore === null ? (
+                                <>
+                                    <h1 style={{ fontSize: '48px', margin: '20px' }}>Game Over</h1>
+                                    <p style={{ fontSize: '24px', margin: '10px' }}>Your Score: {score}</p>
+                                    <p style={{ fontSize: '24px', margin: '10px', color: 'white' }}>Waiting for opponent...</p>
+                                </>
+                            ) : (
+                                <>
+                                    <h1 style={{ fontSize: '48px', margin: '20px' }}>
+                                        {friendScore > score ? 'You Lose!' : 'You Win!'}
+                                    </h1>
+                                    <p style={{ fontSize: '24px', margin: '10px' }}>Your Score: {score}</p>
+                                </>
+                            )}
                             <button onClick={handlePVPRematch} style={{
                                 fontFamily: '"Press Start 2P", monospace', fontSize: '20px', color: 'yellow',
                                 background: 'transparent', border: '2px solid yellow', padding: '10px 20px', cursor: 'pointer',

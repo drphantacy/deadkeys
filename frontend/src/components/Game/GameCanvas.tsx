@@ -82,7 +82,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onZo
 
     // spawn remote zombies on incoming PVP messages
     useEffect(() => {
-        if (pvpMode && remoteWord && remoteType != null && remoteType != 0 && remoteType != 5) {
+        if (pvpMode && remoteWord && (remoteType === 1 || remoteType === 2 || remoteType === 3)) {
             if (!spawnedRemoteWords.current.has(remoteWord)) {
                 spawnedRemoteWords.current.add(remoteWord);
                 const typeMap: Record<number, 'zombie'|'mummy'|'bat'> = {1:'zombie',2:'mummy',3:'bat'};
